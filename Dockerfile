@@ -20,7 +20,7 @@ USER appuser
 WORKDIR /home/appuser
 
 COPY --from=build /main ./
-#COPY --from=build /app/style ./style
+COPY --from=build /app/style ./style
 #COPY --from=build /app/img ./img
 COPY --from=build /app/js ./js
 #COPY --from=build /app/resources ./resources
