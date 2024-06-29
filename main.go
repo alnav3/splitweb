@@ -12,7 +12,7 @@ func main() {
 		fmt.Fprintf(w, "Hello World")
 	})
     // handle directories for static files
-    handleDirectory("js")
+    handleDirectory("/js")
 
     // start the server
 	log.Println("Server started on port 8080")
