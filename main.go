@@ -1,18 +1,21 @@
 package main
 
 import (
-	"fmt"
+	"front"
 	"log"
 	"net/http"
+	"github.com/a-h/templ"
 )
 
 func main() {
     // handle paths
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello World")
+        c := front.LoginPage()
+        templ.Handler(c).ServeHTTP(w, r)
 	})
+
     // handle directories for static files
-    handleDirectory("/js")
+    handleDirectory( "/js/", "/style/" )
 
     // start the server
 	log.Println("Server started on port 8080")
