@@ -25,6 +25,13 @@ COPY --from=build /app/style ./style
 COPY --from=build /app/js ./js
 #COPY --from=build /app/resources ./resources
 
+# Copy the entrypoint script and make it executable
+COPY --from=build /app/entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
+# Use the entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]
+
 # Use an absolute path for CMD
 CMD ["/home/appuser/main"]
 
