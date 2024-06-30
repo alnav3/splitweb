@@ -16,8 +16,12 @@ ENV APP_NAME=main
 
 # Add a new user "appuser" and switch to it
 RUN adduser -D appuser
-USER appuser
 WORKDIR /home/appuser
+
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
+USER appuser
 
 COPY --from=build /main ./
 COPY --from=build /app/style ./style
@@ -25,9 +29,6 @@ COPY --from=build /app/style ./style
 COPY --from=build /app/js ./js
 #COPY --from=build /app/resources ./resources
 
-# Copy the entrypoint script and make it executable
-COPY --from=build /app/entrypoint.sh ./
-RUN chmod +x entrypoint.sh
 
 # Use the entrypoint script
 ENTRYPOINT ["./entrypoint.sh"]
