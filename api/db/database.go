@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
+	"git.alnav.dev/alnav3/splitweb/api/encryption"
 	"github.com/joho/godotenv"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
-    "git.alnav.dev/alnav3/splitweb/api/encryption"
 )
 
 func Connect() (*sql.DB, error) {
@@ -25,8 +26,15 @@ func Connect() (*sql.DB, error) {
     if err != nil {
         log.Panic(fmt.Sprintf("Error connecting to database %s: %s", dbUrl, err))
     }
-    fmt.Println(db)
     return db, nil
+}
+
+func GetSessionToken() string {
+    err := godotenv.Load()
+    if err != nil {
+        log.Fatal("Error loading .env file")
+    }
+    return os.Getenv("TURSO_JWT_SECRET")
 }
 
 func AuthUser(username, password string, db *sql.DB) (string, error) {
@@ -42,6 +50,7 @@ func AuthUser(username, password string, db *sql.DB) (string, error) {
         return "", errors.New("password is incorrect")
     }
 
+    fmt.Println("password encriptada: ", encryptedPass)
     secret := os.Getenv("TURSO_JWT_SECRET")
     jwt := encryption.GenerateJWT(username, secret)
     // authenticate the user
@@ -51,11 +60,17 @@ func AuthUser(username, password string, db *sql.DB) (string, error) {
 func SignupUser(username string, hashedPassword string, db *sql.DB) error {
     result, err := db.Exec("INSERT INTO user (user, encryptedPassword) VALUES (?, ?)", username, hashedPassword)
     if err != nil {
+        if strings.Contains(err.Error(), "UNIQUE constraint failed: user.user") {
+            fmt.Println("Error: User already exists")
+            return errors.New("user already exists")
+        }
+        fmt.Println("Error inserting user: ", err)
         return err
     }
 
     rowsAffected, err := result.RowsAffected()
     if err != nil {
+        fmt.Println("Error getting rows affected: ", err)
         return err
     }
 
