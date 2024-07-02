@@ -107,3 +107,9 @@ func handleSqlErr(err error) error {
     // A database error occurred
     return err
 }
+
+func GetSecret() string {
+    godotenv.Load()
+    return os.Getenv("TURSO_JWT_SECRET")
+}
+

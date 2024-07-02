@@ -13,9 +13,13 @@ import (
 
 func handlePaths() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        c := front.LoginPage("")
-        templ.Handler(c).ServeHTTP(w, r)
+        handleHome(w, r)
 	})
+
+    http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+        c := front.LoginBase(front.LoginBox(""))
+        templ.Handler(c).ServeHTTP(w, r)
+    })
 
 	http.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
         authUser(w, r)
@@ -26,7 +30,7 @@ func handlePaths() {
 	})
 
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-        c := front.RegisterPage("")
+        c := front.LoginBase(front.RegisterBox(""))
         templ.Handler(c).ServeHTTP(w, r)
 	})
 
@@ -35,7 +39,7 @@ func handlePaths() {
 	})
 
     // handle directories for static files
-    handleDirectory( "/js/", "/style/" )
+    handleDirectory( "/js/", "/style/" , "/img/")
 }
 
 func retry(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +50,7 @@ func retry(w http.ResponseWriter, r *http.Request) {
     }
     token := sessions.Values["token"]
     fmt.Println("token from retry:", token)
-    c := front.LoginPage("")
+    c := front.LoginBase(front.LoginBox(""))
     templ.Handler(c).ServeHTTP(w, r)
 }
 
@@ -57,7 +61,8 @@ func authUser(w http.ResponseWriter, r *http.Request) {
 
     token, err := db.AuthUser(username, password, database)
     if err != nil {
-        c := front.LoginPage("Invalid credentials")
+        changeUrl(w, "/login")
+        c := front.LoginBase(front.LoginBox("Invalid credentials"))
         templ.Handler(c).ServeHTTP(w, r)
         return
     }
@@ -67,18 +72,17 @@ func authUser(w http.ResponseWriter, r *http.Request) {
     err = session.Save(r, w)
 
     if err != nil {
-        c := front.LoginPage("Connection error. Try again later.")
+        changeUrl(w, "/login")
+        c := front.LoginBase(front.LoginBox("Connection error. Try again later."))
         templ.Handler(c).ServeHTTP(w, r)
         return
     }
 
-    c := front.Token(token)
+    changeUrl(w, "/")
+    c := front.Base(username)
     templ.Handler(c).ServeHTTP(w, r)
 }
 
-func throwInternalServerError(w http.ResponseWriter, err error) {
-    http.Error(w, err.Error(), http.StatusInternalServerError)
-}
 
 func signupUser(w http.ResponseWriter, r *http.Request) {
     username := r.FormValue("username")
@@ -87,25 +91,53 @@ func signupUser(w http.ResponseWriter, r *http.Request) {
 
     if password != passwordR {
         log.Println("Passwords do not match")
-        c := front.RegisterPage("Passwords do not match")
+        c := front.LoginBase(front.RegisterBox("Passwords do not match"))
         templ.Handler(c).ServeHTTP(w, r)
         return
     }
 
     password, err := encryption.Encrypt(password)
     if err != nil {
-        c := front.RegisterPage("Error encrypting password")
+        c := front.LoginBase(front.RegisterBox("Error encrypting password"))
         templ.Handler(c).ServeHTTP(w, r)
         return
     }
 
     err = db.SignupUser(username, password, database)
     if err != nil {
-        c := front.RegisterPage("The user already exists")
+        c := front.LoginBase(front.RegisterBox("Error signing up"))
         templ.Handler(c).ServeHTTP(w, r)
         return
     }
+
     authUser(w, r)
+}
+
+func changeUrl(w http.ResponseWriter, url string) {
+    w.Header().Set("Hx-Replace-Url", "true")
+    w.Header().Set("Hx-Push-Url", url)
+}
+
+func handleHome(w http.ResponseWriter, r *http.Request) {
+    sessions, err := store.Get(r, "cred")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    token, ok := sessions.Values["token"].(string)
+    if !ok {
+        // redirect to login
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+    username, err := encryption.ValidateToken(token, db.GetSecret())
+    if err != nil {
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    } else {
+        c := front.Base(username)
+        templ.Handler(c).ServeHTTP(w, r)
+    }
 }
 
 
@@ -114,3 +146,8 @@ func handleDirectory(dirs... string) {
         http.Handle(dir, http.StripPrefix(dir, http.FileServer(http.Dir("."+dir))))
     }
 }
+
+func throwInternalServerError(w http.ResponseWriter, err error) {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+}
+

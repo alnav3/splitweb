@@ -1,0 +1,45 @@
+package front
+
+
+func printEndpoint(id string) string {
+    return "/"+id
+}
+
+type NavItems struct {
+    Name string
+    Id string
+}
+
+templ Navbar(position int,  items []NavItems,child templ.Component) {
+    <div id="navbar" class="transition ease-in-out w-full px-5">
+        <nav class="sm:flex mx-auto space-x-7 md:space-x-20 max-w-4xl rounded-2xl bg-mantle mt-10 ">
+            <ul class="flex justify-around items-center w-full">
+                for i, item := range items {
+                <li class="flex-1">
+                    if i != position {
+                        <button Id={item.Id} class="flex items-center justify-center w-full h-fit
+                                text-text hover:bg-gray-700 hover:text-white rounded-lg p-2 font-bold"
+                                hx-get={printEndpoint(item.Id)} hx-target="#navbar"
+                                hx-swap="innerHTML transition:true">
+                            {item.Name}
+                        </button>
+                    }
+                    else {
+                        <button Id={item.Id} class="flex
+                            items-center justify-center w-full h-full rounded-lg p-2 bg-mauve border-transparent
+                            text-base dark:text-surface0 font-bold"
+                            hx-get={printEndpoint(item.Id)} hx-target="#navbar"
+                            hx-swap="innerHTML transition:true">
+                            {item.Name}
+                        </button>
+                    }
+                </li>
+                }
+            </ul>
+
+        </nav>
+        @child
+    </div>
+}
+
+
