@@ -23,7 +23,7 @@ var navitems = []NavItems{
 }
 
 templ ThemeButton ( theme string) {
-    <div class="flex fixed top-0 right-0 p-12">
+    <div class="flex fixed top-0 right-0 p-4 md:p-12">
         <button
             onclick="htmx.removeClass(htmx.find('#body'), 'dark')"
             hx-get="/theme" hx-target="this" hx-swap="none">
@@ -47,6 +47,8 @@ templ Base(username string) {
 	<!DOCTYPE html>
 	<html>
 		<head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title>Dashboard - { username }</title>
 			<link href="/style/tailwind.css" rel="stylesheet"/>
 		</head>
