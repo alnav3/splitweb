@@ -82,7 +82,7 @@ func Base(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link href=\"/style/tailwind.css\" rel=\"stylesheet\"></head><body id=\"body\" class=\"dark dark:mocha bg-base \"><div class=\" w-full text-base flex items-center justify-center \">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link href=\"/style/tailwind.css\" rel=\"stylesheet\"></head><body id=\"body\" class=\"dark dark:mocha bg-base \"><div class=\" text-base flex items-center justify-center \">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -142,7 +142,7 @@ func Dashboard() templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex-row items-center w-full justify-center\"><h1 class=\"text-5xl text-lavender font-bold text-center mt-32 mb-16\">Your Groups</h1>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex-row items-center w-full max-w-sm md:max-w-lg justify-center\"><h1 class=\"text-5xl text-lavender font-bold text-center mt-32 mb-16\">Your Groups</h1>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -21,6 +21,7 @@ var navitems = []NavItems{
 	{Name: "About", Id: "about"},
 	{Name: "Contact", Id: "contact"},
 }
+
 templ ThemeButton ( theme string) {
     <div class="flex fixed top-0 right-0 p-12">
         <button
@@ -42,7 +43,6 @@ templ ThemeButton ( theme string) {
     </div>
 }
 
-
 templ Base(username string) {
 	<!DOCTYPE html>
 	<html>
@@ -51,7 +51,7 @@ templ Base(username string) {
 			<link href="/style/tailwind.css" rel="stylesheet"/>
 		</head>
         <body id="body" class="dark dark:mocha bg-base ">
-            <div class=" w-full text-base flex items-center justify-center ">
+            <div class=" text-base flex items-center justify-center ">
                 @ThemeButton("dark")
                 @Dashboard()
             </div>
@@ -68,7 +68,7 @@ templ empty() {
 }
 
 templ Dashboard() {
-	<div class="flex-row items-center w-full justify-center">
+	<div class="flex-row items-center w-full max-w-sm md:max-w-lg justify-center">
 		<h1 class="text-5xl text-lavender font-bold text-center mt-32 mb-16">Your Groups</h1>
 		@Projects(projects)
 	</div>
