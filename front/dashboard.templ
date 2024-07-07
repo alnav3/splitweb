@@ -80,9 +80,10 @@ templ Projects(projects []Project) {
 	<div id="navbar-content" class=" max-w-sm md:max-w-lg mx-auto mt-8">
 		for _, project := range projects {
 			<a
-				href="https://www.github.com"
-				class="py-4 flex sm:grid-cols-3 max-w-sm md:max-w-lg mx-auto my-5 bg-mantle rounded-lg shadow
-                space-x-5 ml-2 mr-2">
+				href="/group"
+				class="py-4 flex sm:grid-cols-3 max-w-sm md:max-w-lg mx-auto my-5 bg-mantle rounded-lg
+                hover:shadow-xl transition-transform duration-300 hover:-translate-y-2
+                space-x-5 ml-2 mr-2 cursor-pointer">
 				<div class="space-y-8 sm:col-span-2 my-0 mx-11">
 					<p class=" text-xl font-bold sm:text-2xl text-text">{ project.Title }</p>
                     if (project.Balance > 0) {

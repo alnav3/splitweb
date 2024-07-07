@@ -1,0 +1,87 @@
+package front
+
+templ layout() {
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <title>Expense Tracker</title>
+            <script src="/js/htmx.min.js"></script>
+            <link href="/style/tailwind.css" rel="stylesheet"/>
+        </head>
+        <body id="body" class="dark dark:mocha bg-base">
+                <div class="text-text">
+                    { children... }
+                </div>
+        </body>
+    </html>
+}
+
+templ IndexPage() {
+    @layout() {
+        <div class="flex justify-between items-center w-full">
+            <div class="flex items-center mt-24 md:mt-12 ml-8 md:ml-36 text-4xl mb-10 md:mb-4">
+                <img class="max-w-24 max-h-24 dark:text-white rounded-full  mx-auto sm:mx-0 sm:shrink-0" src="/img/group.jpg" alt="Profile photo" />
+                <div class="flex-row ml-4">
+                    <h1 class="font-bold">Group Name</h1>
+                    <p class="text-2xl">You owe <span class="text-red">-25.00$</span></p>
+                </div>
+            </div>
+        </div>
+        @ThemeButton("dark")
+        <h2 class="text-3xl sm:text-4xl xl:text-5xl font-bold my-5 lg:my-7 text-lavender text-center">Recent Transactions</h2>
+        <button class="bg-mauve text-base text-xl font-semibold px-4 py-2 rounded-md fixed bottom-4 left-1/2 -translate-x-1/2 ">+ Add Expense</button>
+            <div class="flex justify-center items-center mb-3 mx-5">
+                <div class="flex-row w-full max-w-xl sm:max-w-2xl md:max-w-4xl xl:max-w-5xl ">
+                    <div class="bg-mantle text-primary-foreground rounded-tl-lg rounded-tr-lg px-4 py-2 font-semibold">April, 2024</div>
+                    <table class="w-full text-lg md:text-2xl py-2">
+                        <thead>
+                        </thead>
+                        <tbody>
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        for i:= 0; i < 2; i++ {
+            <div class="flex justify-center items-center mb-3 mx-5">
+                <div class="flex-row w-full max-w-xl sm:max-w-2xl md:max-w-4xl xl:max-w-5xl ">
+                    <div class="bg-mantle text-primary-foreground rounded-tl-lg rounded-tr-lg px-4 py-2 font-semibold">May, 2024</div>
+                    <table class="w-full text-lg md:text-2xl py-2">
+                        <thead>
+                        </thead>
+                        <tbody>
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
+                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        <div class="mb-24"/>
+
+    }
+}
+
+templ transactionRow(date, description, amount string, positive interface{}) {
+<tr class="border-b border-surface0 py-5 hover:bg-gray-700 cursor-pointer" onclick="console.log('hello world')">
+    <td class="py-3 w-1/4">{ date }</td>
+    <td class="py-3 text-center w-1/2">{ description }</td>
+    <td class={
+        "text-right py-3 w-1/4",
+        templ.KV("text-green", positive == true),
+        templ.KV("text-red", positive == false),
+        templ.KV("text-subtext0", positive == nil),
+    }>{ amount }</td>
+</tr>
+}

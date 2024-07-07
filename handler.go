@@ -11,12 +11,14 @@ import (
 	"github.com/a-h/templ"
 )
 
+const login = "/login"
+
 func handlePaths() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         handleHome(w, r)
 	})
 
-    http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+    http.HandleFunc(login, func(w http.ResponseWriter, r *http.Request) {
         c := front.LoginBase(front.LoginBox(""))
         templ.Handler(c).ServeHTTP(w, r)
     })
@@ -36,6 +38,11 @@ func handlePaths() {
 
 	http.HandleFunc("/retry", func(w http.ResponseWriter, r *http.Request) {
         retry(w, r)
+	})
+
+	http.HandleFunc("/group", func(w http.ResponseWriter, r *http.Request) {
+        c := front.IndexPage()
+        templ.Handler(c).ServeHTTP(w, r)
 	})
 
     // handle directories for static files
@@ -61,7 +68,7 @@ func authUser(w http.ResponseWriter, r *http.Request) {
 
     token, err := db.AuthUser(username, password, database)
     if err != nil {
-        changeUrl(w, "/login")
+        changeUrl(w, login)
         c := front.LoginBase(front.LoginBox("Invalid credentials"))
         templ.Handler(c).ServeHTTP(w, r)
         return
@@ -72,7 +79,7 @@ func authUser(w http.ResponseWriter, r *http.Request) {
     err = session.Save(r, w)
 
     if err != nil {
-        changeUrl(w, "/login")
+        changeUrl(w, login)
         c := front.LoginBase(front.LoginBox("Connection error. Try again later."))
         templ.Handler(c).ServeHTTP(w, r)
         return
@@ -127,12 +134,12 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
     token, ok := sessions.Values["token"].(string)
     if !ok {
         // redirect to login
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        http.Redirect(w, r, login, http.StatusSeeOther)
         return
     }
     username, err := encryption.ValidateToken(token, db.GetSecret())
     if err != nil {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        http.Redirect(w, r, login, http.StatusSeeOther)
         return
     } else {
         c := front.Base(username)

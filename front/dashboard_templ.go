@@ -179,14 +179,14 @@ func Projects(projects []Project) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, project := range projects {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"https://www.github.com\" class=\"py-4 flex sm:grid-cols-3 max-w-sm md:max-w-lg mx-auto my-5 bg-mantle rounded-lg shadow\n                space-x-5 ml-2 mr-2\"><div class=\"space-y-8 sm:col-span-2 my-0 mx-11\"><p class=\" text-xl font-bold sm:text-2xl text-text\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/group\" class=\"py-4 flex sm:grid-cols-3 max-w-sm md:max-w-lg mx-auto my-5 bg-mantle rounded-lg\n                hover:shadow-xl transition-transform duration-300 hover:-translate-y-2\n                space-x-5 ml-2 mr-2 cursor-pointer\"><div class=\"space-y-8 sm:col-span-2 my-0 mx-11\"><p class=\" text-xl font-bold sm:text-2xl text-text\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(project.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 87, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 88, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -204,7 +204,7 @@ func Projects(projects []Project) templ.Component {
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", project.Balance) + project.currencySymbol)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 91, Col: 90}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 92, Col: 90}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -222,7 +222,7 @@ func Projects(projects []Project) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", project.Balance) + project.currencySymbol)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 96, Col: 90}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 97, Col: 90}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -240,7 +240,7 @@ func Projects(projects []Project) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", project.Balance) + project.currencySymbol)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 101, Col: 90}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/dashboard.templ`, Line: 102, Col: 90}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
