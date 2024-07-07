@@ -46,7 +46,7 @@ func handlePaths() {
 	})
 
     // handle directories for static files
-    handleDirectory( "/js/", "/style/" , "/img/")
+    handleDirectory( "/js/", "/style/" , "/img/", "/static/")
 }
 
 func retry(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,18 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "minimal-ui",
+  "name": "split.alnav",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "split.alnav",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "type": "image/x-icon"
+    }
+  ],
+  "lang": "en"
+}

@@ -23,7 +23,7 @@ func layout() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Expense Tracker</title><script src=\"/js/htmx.min.js\"></script><link href=\"/style/tailwind.css\" rel=\"stylesheet\"></head><body id=\"body\" class=\"dark dark:mocha bg-base\"><div class=\"text-text\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Expense Tracker</title><script src=\"/js/htmx.min.js\"></script><link href=\"/static/manifest.json\" rel=\"manifest\"><link href=\"/style/tailwind.css\" rel=\"stylesheet\"></head><body id=\"body\" class=\"dark dark:mocha bg-base\"><div class=\"text-text\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -175,7 +175,7 @@ func transactionRow(date, description, amount string, positive interface{}) temp
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/group.templ`, Line: 78, Col: 33}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/group.templ`, Line: 79, Col: 33}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -188,7 +188,7 @@ func transactionRow(date, description, amount string, positive interface{}) temp
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/group.templ`, Line: 79, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/group.templ`, Line: 80, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -228,7 +228,7 @@ func transactionRow(date, description, amount string, positive interface{}) temp
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(amount)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/group.templ`, Line: 85, Col: 14}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/group.templ`, Line: 86, Col: 14}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
