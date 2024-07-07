@@ -1,0 +1,9 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "dev.alnav.split.twa",
+        "sha256_cert_fingerprints": ["A2:E5:D0:17:CB:9F:83:F4:33:F4:2F:CA:EE:64:6F:19:30:5B:18:61:C4:97:9D:BA:0E:55:A3:C4:27:AD:B8:43"]
+      }
+}]
+
