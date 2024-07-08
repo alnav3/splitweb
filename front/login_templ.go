@@ -102,7 +102,7 @@ func RegisterBox(msgerror string) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"p-8 rounded-lg w-full text-base flex items-center justify-center min-h-screen\"><div class=\"p-8 rounded-lg w-full max-w-md\"><div class=\"p-8 rounded-lg bg-mantle shadow-lg \"><h2 class=\"text-2xl text-text font-bold mb-6\">Register new user</h2><form hx-get=\"/signUp\" hx-target=\"body\" hx-swap=\"innerHTML\"><div class=\"mb-4\"><label class=\"block text-text mb-2\" for=\"username\">Username</label> <input class=\"w-full px-3 py-2 text-text bg-base rounded\" type=\"text\" id=\"username\" name=\"username\" required></div><div class=\"mb-4\"><label class=\"block text-text mb-2\" for=\"password\">Password</label> <input class=\"w-full px-3 py-2 bg-base text-text rounded\" type=\"password\" id=\"password\" name=\"password\" required></div><div class=\"mb-4\"><label class=\"block text-text mb-2\" for=\"password\">Repeat password</label> <input class=\"w-full px-3 py-2 bg-base text-text rounded\" type=\"password\" id=\"passwordR\" name=\"passwordR\" required></div><button class=\"w-full bg-mauve py-2 text-base dark:text-surface0 text-bold rounded\n                        hover:bg-frappe-700 transition duration-300\">Register</button></form><p class=\"text-text mt-5\">Already have an account? <a href=\"/login\" class=\"text-mauve\">Login</a></p></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"rounded-lg w-full text-base flex items-center justify-center min-h-screen\"><div class=\"p-8 rounded-lg bg-mantle shadow-lg \"><h2 class=\"text-2xl text-text font-bold mb-6\">Register new user</h2><form hx-get=\"/signUp\" hx-target=\"body\" hx-swap=\"innerHTML\"><div class=\"mb-4\"><label class=\"block text-text mb-2\" for=\"username\">Username</label> <input class=\"w-full px-3 py-2 text-text bg-base rounded\" type=\"text\" id=\"username\" name=\"username\" required></div><div class=\"mb-4\"><label class=\"block text-text mb-2\" for=\"password\">Password</label> <input class=\"w-full px-3 py-2 bg-base text-text rounded\" type=\"password\" id=\"password\" name=\"password\" required></div><div class=\"mb-4\"><label class=\"block text-text mb-2\" for=\"password\">Repeat password</label> <input class=\"w-full px-3 py-2 bg-base text-text rounded\" type=\"password\" id=\"passwordR\" name=\"passwordR\" required></div><button class=\"w-full bg-mauve py-2 text-base dark:text-surface0 text-bold rounded\n                        hover:bg-frappe-700 transition duration-300\">Register</button></form><p class=\"text-text mt-5\">Already have an account? <a href=\"/login\" class=\"text-mauve\">Login</a></p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -114,7 +114,7 @@ func RegisterBox(msgerror string) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(msgerror)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/login.templ`, Line: 72, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `front/login.templ`, Line: 71, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -125,7 +125,7 @@ func RegisterBox(msgerror string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
