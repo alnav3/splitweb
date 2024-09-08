@@ -81,6 +81,8 @@ ENV MIGRATIONS_URL=file://migrations
 # Expose the port that the application listens on.
 EXPOSE 80
 
+# Use the entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]
 # What the container should run when it is started.
-ENTRYPOINT [ "/bin/server" ]
+CMD [ "/bin/server" ]
 
