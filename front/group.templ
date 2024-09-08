@@ -1,5 +1,12 @@
 package front
 
+type Transaction struct {
+    Date string
+    Description string
+    Amount string
+    Positive interface{}
+}
+
 templ layout() {
     <!DOCTYPE html>
     <html lang="en">
@@ -40,12 +47,11 @@ templ IndexPage() {
                         <thead>
                         </thead>
                         <tbody>
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                            for i := 0; i < 2; i++ {
+                                @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
+                                @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
+                                @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -58,12 +64,11 @@ templ IndexPage() {
                         <thead>
                         </thead>
                         <tbody>
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
-                            @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                            for i := 0; i < 2; i++ {
+                                @transactionRow("Mon. 01", "Dinner at Sushi Spot", "75.00$", true)
+                                @transactionRow("Mon. 01", "Dinner at Sushi Spot", "-75.00$", false)
+                                @transactionRow("Mon. 01", "Dinner at Sushi Spot", "Not involved", nil)
+                            }
                         </tbody>
                     </table>
                 </div>
