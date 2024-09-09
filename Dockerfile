@@ -58,9 +58,15 @@ RUN --mount=type=cache,target=/var/cache/apk \
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
-RUN adduser -D appuser
-
-WORKDIR /home/appuser
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    appuser
+USER appuser
 
 # Copy the executable from the "build" stage.
 COPY --from=build /bin/server /bin/
@@ -69,19 +75,12 @@ COPY  ./img ./img
 COPY  ./js ./js
 COPY  ./.well-known ./.well-known
 COPY  ./static ./static
-COPY entrypoint.sh ./
-
-RUN chmod +x entrypoint.sh
-
-USER appuser
 
 ENV MIGRATIONS_URL=file://migrations
 
 # Expose the port that the application listens on.
 EXPOSE 80
 
-# Use the entrypoint script
-ENTRYPOINT ["./entrypoint.sh"]
 # What the container should run when it is started.
-CMD [ "/bin/server" ]
+ENTRYPOINT [ "/bin/server" ]
 

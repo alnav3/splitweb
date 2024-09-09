@@ -17,7 +17,7 @@ func Connect() (*sql.DB, error) {
     // connect to the database
     err := godotenv.Load()
     if err != nil {
-        log.Fatal("Error loading .env file")
+        fmt.Println("Error loading .env file, using system environment variables")
     }
     token := os.Getenv("TURSO_AUTH_TOKEN")
     dbUrl := os.Getenv("TURSO_DATABASE_URL")
@@ -32,7 +32,7 @@ func Connect() (*sql.DB, error) {
 func GetSessionToken() string {
     err := godotenv.Load()
     if err != nil {
-        log.Fatal("Error loading .env file")
+        fmt.Println("Error loading .env file, using system environment variables")
     }
     return os.Getenv("TURSO_JWT_SECRET")
 }
