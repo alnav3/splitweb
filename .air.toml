@@ -1,0 +1,39 @@
+# .air.toml
+# Config file for Air (hot reloading tool for Go)
+
+# Working directory
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# Just a command for hot reloading
+cmd = "templ generate && tailwindcss -i ./front/setup.css -o ./style/tailwind.css && go build -o ./tmp/main ."
+# Binary file yields from `cmd`.
+bin = "tmp/main"
+# Customize binary
+full_bin = "PORT=8081 ./tmp/main"
+# Watch these filename extensions.
+include_ext = ["go", "css", "js", "html", "templ"]
+# Ignore these paths.
+exclude_dir = ["tmp", "vendor", "node_modules"]
+exclude_regex = ["_templ.go", "_test.go"]
+# It's not necessary to trigger build each time file changes if it's too frequent.
+delay = 1000 # ms
+# Stop to run old binary when build errors occur.
+stop_on_error = true
+
+[log]
+# Show log time
+time = true
+
+[color]
+# Customize each part's color.
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+# Delete tmp directory on exit
+clean_on_exit = true
+
