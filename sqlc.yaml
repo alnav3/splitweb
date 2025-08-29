@@ -1,0 +1,17 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./db/queries"
+    schema: "./db/migrations/"
+    gen:
+      go:
+        emit_json_tags: true
+        package: "internalRepository"
+        out: "db/internal_repository"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "date"
+            go_type:
+              import: "time"
+              type: "Time"
+
