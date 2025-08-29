@@ -1,0 +1,667 @@
+package templates
+
+type Group struct {
+	ID          string
+	Name        string
+	Description string
+	Members     int
+	Balance     float64
+	ImageURL    string
+}
+
+templ SearchInput() {
+	<div x-data="{ searchQuery: '' }" @keyup="$dispatch('search-input', searchQuery)">
+		<div class="relative">
+			<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+				<svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+					<path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+				</svg>
+			</div>
+			<input
+				type="text"
+				class="block w-full pl-10 pr-3 py-2 border border-ctp-surface2 rounded-md leading-5 bg-ctp-surface1 placeholder-ctp-subtext0 text-ctp-text focus:outline-none focus:ring-ctp-blue focus:border-ctp-blue sm:text-sm"
+				placeholder="Search groups..."
+				x-model="searchQuery"
+			/>
+		</div>
+	</div>
+}
+
+templ ProfileDropdown() {
+	<div class="relative" x-data="{ open: false }">
+		<button
+			type="button"
+			@click="open = !open"
+			class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ctp-blue"
+		>
+			<img
+				class="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
+				src="https://ui-avatars.com/api/?name=Jhon+Doe&background=89b4fa&color=fff"
+				alt="Profile picture"
+			/>
+		</button>
+		<div
+			x-show="open"
+			@click.away="open = false"
+			class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-ctp-mantle ring-1 ring-ctp-surface2 ring-opacity-5 focus:outline-none z-10"
+			x-transition:enter="transition ease-out duration-100"
+			x-transition:enter-start="transform opacity-0 scale-95"
+			x-transition:enter-end="transform opacity-100 scale-100"
+			x-transition:leave="transition ease-in duration-75"
+			x-transition:leave-start="transform opacity-100 scale-100"
+			x-transition:leave-end="transform opacity-0 scale-95"
+		>
+			<a href="/profile" class="block px-4 py-2 text-sm text-ctp-text hover:bg-ctp-surface1">Your Profile</a>
+			<a href="#" class="block px-4 py-2 text-sm text-ctp-text hover:bg-ctp-surface1">Settings</a>
+			<button 
+				hx-post="/auth/logout" 
+				hx-confirm="Are you sure you want to log out?"
+				class="block w-full text-left px-4 py-2 text-sm text-ctp-text hover:bg-ctp-surface1"
+			>
+				Sign out
+			</button>
+		</div>
+	</div>
+}
+
+templ DashboardHeader() {
+	<header class="bg-ctp-mantle shadow">
+		<div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+			<div class="flex flex-col space-y-4 sm:hidden">
+				<div class="flex justify-between items-center">
+					<h1 class="text-xl font-bold text-ctp-blue">SplitWeb</h1>
+					@ProfileDropdown()
+				</div>
+				@SearchInput()
+			</div>
+
+			<div class="hidden sm:flex justify-between items-center">
+				<div class="flex-1 flex items-center">
+					<div class="flex-shrink-0">
+						<h1 class="text-2xl font-bold text-ctp-blue">SplitWeb</h1>
+					</div>
+				</div>
+
+				<div class="flex-1 max-w-md mx-auto">
+					@SearchInput()
+				</div>
+
+				<div class="ml-4 flex items-center">
+					<div class="ml-3">
+						@ProfileDropdown()
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+}
+
+templ GroupDropdownMenu(groupId, groupName string) {
+	<div
+		x-show="dropdownOpen"
+		@click.away="dropdownOpen = false"
+		x-transition:enter="transition ease-out duration-100"
+		x-transition:enter-start="transform opacity-0 scale-95"
+		x-transition:enter-end="transform opacity-100 scale-100"
+		x-transition:leave="transition ease-in duration-75"
+		x-transition:leave-start="transform opacity-100 scale-100"
+		x-transition:leave-end="transform opacity-0 scale-95"
+		class="absolute right-0 mt-2 w-48 bg-ctp-mantle rounded-lg shadow-lg ring-1 ring-ctp-surface2 ring-opacity-5 focus:outline-none z-10"
+	>
+		<div class="py-1">
+			<button
+				@click={ "$dispatch('invite-member', { groupId: '" + groupId + "', groupName: '" + groupName + "' }); dropdownOpen = false" }
+				class="flex items-center w-full px-4 py-2 text-sm text-ctp-text hover:bg-ctp-surface1 transition-colors"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-3 text-ctp-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+				</svg>
+				Invite Someone
+			</button>
+			<button
+				@click={ "$dispatch('leave-group', { groupId: '" + groupId + "', groupName: '" + groupName + "' }); dropdownOpen = false" }
+				class="flex items-center w-full px-4 py-2 text-sm text-ctp-text hover:bg-ctp-surface1 transition-colors"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-3 text-ctp-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+				</svg>
+				Leave Group
+			</button>
+		</div>
+	</div>
+}
+
+templ GroupCard(id, name, description, imageUrl, gradientClasses, balanceText, balanceColorClass string, hasDropdown bool) {
+	<div class="group-card bg-ctp-mantle rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-300 relative" x-data="{ dropdownOpen: false }">
+		<a href={ templ.URL("/group/" + id) } class="block">
+			<div class={ "h-32 relative " + gradientClasses }>
+				<img
+					src={ imageUrl }
+					alt="Group image"
+					class="w-full h-full object-cover opacity-60"
+				/>
+			</div>
+			<div class="p-4 sm:p-5">
+				<h3 class="group-name text-base sm:text-lg font-bold mb-1">{ name }</h3>
+				<p class="group-desc text-sm text-ctp-subtext0 mb-3">{ description }</p>
+				<div class="flex justify-between items-center">
+					<div class="flex -space-x-2">
+						{ children... }
+					</div>
+					<div class={ "text-sm font-medium " + balanceColorClass }>{ balanceText }</div>
+				</div>
+			</div>
+		</a>
+
+		if hasDropdown {
+			<div class="absolute top-3 right-3">
+				<button
+					@click.prevent="dropdownOpen = !dropdownOpen"
+					class="p-2 rounded-full bg-black/20 hover:bg-black/30 text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+					@click.stop
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+						<path d="M12 16a2 2 0 100 4 2 2 0 000-4zM12 10a2 2 0 100 4 2 2 0 000-4zM12 4a2 2 0 100 4 2 2 0 000-4z"/>
+					</svg>
+				</button>
+				@GroupDropdownMenu(id, name)
+			</div>
+		}
+	</div>
+}
+
+templ DashboardSuccessAlert() {
+	<div
+		x-show="successAlert"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0 transform translate-y-2"
+		x-transition:enter-end="opacity-100 transform translate-y-0"
+		x-transition:leave="transition ease-in duration-200"
+		x-transition:leave-start="opacity-100 transform translate-y-0"
+		x-transition:leave-end="opacity-0 transform translate-y-2"
+		:class="alertMessage.includes('Left group') ? 'fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : 'fixed top-4 right-4 z-50 bg-ctp-green text-white px-6 py-4 rounded-lg shadow-lg max-w-sm'"
+	>
+		<div class="flex items-center">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="alertMessage.includes('Left group') ? 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1' : 'M5 13l4 4L19 7'"/>
+			</svg>
+			<p class="font-medium" x-text="alertMessage"></p>
+		</div>
+	</div>
+}
+
+templ InviteModal() {
+	<div
+		x-show="inviteModal"
+		class="fixed inset-0 z-50 overflow-y-auto"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-200"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+	>
+		<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+			<div
+				@click="inviteModal = false"
+				class="fixed inset-0 bg-black/30 transition-opacity"
+			></div>
+
+			<div
+				class="relative bg-ctp-mantle rounded-lg shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+				x-transition:enter="transition ease-out duration-300"
+				x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+				x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+			>
+				<div class="px-6 pt-6 pb-4">
+					<div class="flex items-center mb-4">
+						<div class="bg-ctp-green/10 p-3 rounded-full mr-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ctp-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+							</svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-ctp-text">Invite to Group</h3>
+							<p class="text-sm text-ctp-subtext0" x-text="'Send an invitation to join &quot;' + currentGroup.name + '&quot;'"></p>
+						</div>
+					</div>
+
+					<form hx-post="/group/invite" hx-target="#invite-feedback" @submit="
+						setTimeout(() => {
+							inviteModal = false;
+							alertMessage = 'Invitation sent successfully!';
+							successAlert = true;
+							setTimeout(() => successAlert = false, 4000);
+						}, 500);
+					">
+						<input type="hidden" name="groupId" x-bind:value="currentGroup.id"/>
+						<div id="invite-feedback" class="mb-4"></div>
+
+						<div class="mb-4">
+							<label for="inviteEmail" class="block text-sm font-medium text-ctp-subtext1 mb-2">Email Address</label>
+							<input
+								type="email"
+								id="inviteEmail"
+								name="email"
+								required
+								class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-green focus:border-ctp-green transition-colors"
+								placeholder="Enter email address to invite"
+							/>
+						</div>
+
+						<div class="mb-6">
+							<label for="inviteMessage" class="block text-sm font-medium text-ctp-subtext1 mb-2">Personal Message (Optional)</label>
+							<textarea
+								id="inviteMessage"
+								name="message"
+								rows="3"
+								class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-green focus:border-ctp-green transition-colors resize-none"
+								placeholder="Add a personal message to the invitation..."
+							></textarea>
+						</div>
+
+						<div class="flex flex-col sm:flex-row gap-3">
+							<button
+								type="submit"
+								class="flex-1 bg-ctp-green hover:bg-ctp-green/90 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+								</svg>
+								Send Invitation
+							</button>
+							<button
+								type="button"
+								@click="inviteModal = false"
+								class="px-4 py-2 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1 font-semibold transition-all duration-200"
+							>
+								Cancel
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ LeaveModal() {
+	<div
+		x-show="leaveModal"
+		class="fixed inset-0 z-50 overflow-y-auto"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-200"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+	>
+		<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+			<div
+				@click="leaveModal = false"
+				class="fixed inset-0 bg-black/30 transition-opacity"
+			></div>
+
+			<div
+				class="relative bg-ctp-mantle rounded-lg shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full"
+				x-transition:enter="transition ease-out duration-300"
+				x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+				x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+			>
+				<div class="px-6 pt-6 pb-4">
+					<div class="flex items-center mb-4">
+						<div class="bg-ctp-red/10 p-3 rounded-full mr-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ctp-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+							</svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-ctp-text">Leave Group</h3>
+							<p class="text-sm text-ctp-subtext0">This action cannot be undone</p>
+						</div>
+					</div>
+
+					<div class="mb-6">
+						<p class="text-sm text-ctp-text">
+							Are you sure you want to leave
+							<span class="font-semibold" x-text="'&quot;' + currentGroup.name + '&quot;'"></span>?
+						</p>
+						<p class="text-sm text-ctp-subtext0 mt-2">
+							You will lose access to all group expenses and will need to be re-invited to join again.
+						</p>
+					</div>
+
+					<div class="flex flex-col sm:flex-row gap-3">
+						<button
+							@click="
+								leaveModal = false;
+								alertMessage = 'Left group successfully';
+								successAlert = true;
+								setTimeout(() => successAlert = false, 4000);
+							"
+							class="flex-1 bg-ctp-red hover:bg-ctp-red/90 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+							</svg>
+							Yes, Leave Group
+						</button>
+						<button
+							@click="leaveModal = false"
+							class="px-4 py-2 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1 font-semibold transition-all duration-200"
+						>
+							Cancel
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ NewGroupModal() {
+	<div
+		x-show="newGroupModal"
+		class="fixed inset-0 z-50 overflow-y-auto"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-200"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+	>
+		<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+			<div
+				@click="newGroupModal = false"
+				class="fixed inset-0 bg-black/30 transition-opacity"
+			></div>
+
+			<div
+				class="relative bg-ctp-mantle rounded-lg shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+				x-transition:enter="transition ease-out duration-300"
+				x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+				x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+			>
+				<div class="px-6 pt-6 pb-4">
+					<div class="flex flex-col items-center mb-4">
+						<div class="bg-ctp-blue/10 p-3 rounded-full mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ctp-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+							</svg>
+						</div>
+						<div class="text-center">
+							<h3 class="text-lg font-semibold text-ctp-text">Create New Group</h3>
+							<p class="text-sm text-ctp-subtext0">Start splitting expenses with friends</p>
+						</div>
+					</div>
+
+					<div
+						class="space-y-6"
+						x-data="{
+							groupName: '',
+							groupDescription: '',
+							groupImage: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+							errors: {},
+							createGroup() {
+								this.errors = {};
+
+								if (!this.groupName || this.groupName.trim().length < 2) {
+									this.errors.name = 'Group name must be at least 2 characters long';
+								}
+
+								if (Object.keys(this.errors).length > 0) {
+									return;
+								}
+
+								const newGroupId = Date.now().toString();
+								const newGroup = {
+									id: newGroupId,
+									name: this.groupName,
+									description: this.groupDescription,
+									imageUrl: this.groupImage
+								};
+
+								$dispatch('group-created', newGroup);
+
+								this.groupName = '';
+								this.groupDescription = '';
+								this.errors = {};
+								newGroupModal = false;
+								alertMessage = 'Group created successfully!';
+								successAlert = true;
+								setTimeout(() => successAlert = false, 4000);
+							}
+						}"
+					>
+						<div>
+							<label for="groupName" class="block text-sm font-medium text-ctp-subtext1 mb-2">Group Name</label>
+							<input
+								type="text"
+								id="groupName"
+								x-model="groupName"
+								required
+								class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors"
+								placeholder="Enter group name"
+							/>
+							<p x-show="errors.name" x-text="errors.name" class="mt-1 text-sm text-ctp-red"></p>
+						</div>
+
+						<div>
+							<label for="groupDescription" class="block text-sm font-medium text-ctp-subtext1 mb-2">Description</label>
+							<textarea
+								id="groupDescription"
+								x-model="groupDescription"
+								rows="3"
+								class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors resize-none"
+								placeholder="What's this group for? (e.g., Weekend trip to the mountains)"
+							></textarea>
+							<p x-show="errors.description" x-text="errors.description" class="mt-1 text-sm text-ctp-red"></p>
+						</div>
+
+						<div>
+							<label for="groupImage" class="block text-sm font-medium text-ctp-subtext1 mb-2">Group Image (Optional)</label>
+							<select
+								id="groupImage"
+								x-model="groupImage"
+								class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors"
+							>
+								<option value="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80">Friends gathering</option>
+								<option value="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80">Beach trip</option>
+								<option value="https://images.unsplash.com/photo-1574936687446-37484aee0102?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80">Apartment/Housing</option>
+								<option value="https://images.unsplash.com/photo-1528605248644-14dd04022da1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80">Family</option>
+								<option value="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80">Dining out</option>
+								<option value="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80">Road trip</option>
+								<option value="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80">Office/Work</option>
+							</select>
+						</div>
+
+						<div class="flex justify-start">
+							<button
+								@click="createGroup()"
+								:disabled="!groupName"
+								class="font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+								:class="!groupName ? 'bg-ctp-surface2 text-ctp-subtext0' : 'bg-ctp-blue hover:bg-ctp-blue/90 text-white'"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+								</svg>
+								Create Group
+							</button>
+							<button
+								type="button"
+								@click="newGroupModal = false"
+								class="ml-3 px-4 py-2 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1 font-semibold transition-all duration-200"
+							>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+
+
+templ Dashboard() {
+	@Layout("SplitWeb - Dashboard") {
+		<div class="flex flex-col min-h-screen" x-data="{
+			inviteModal: false,
+			leaveModal: false,
+			newGroupModal: false,
+			currentGroup: { id: '', name: '' },
+			successAlert: false,
+			alertMessage: ''
+		}"
+		@invite-member.window="
+			currentGroup = { id: $event.detail.groupId, name: $event.detail.groupName };
+			inviteModal = true;
+		"
+		@leave-group.window="
+			currentGroup = { id: $event.detail.groupId, name: $event.detail.groupName };
+			leaveModal = true;
+		"
+		@new-group.window="
+			newGroupModal = true;
+		"
+		@group-created.window="
+			const newGroup = $event.detail;
+			const groupsContainer = document.querySelector('.groups-grid');
+			if (groupsContainer) {
+				const newGroupCard = document.createElement('div');
+				newGroupCard.className = 'group-card bg-ctp-mantle rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-300 relative';
+				newGroupCard.innerHTML = `
+					<a href='/group/${newGroup.id}' class='block'>
+						<div class='h-32 relative bg-gradient-to-r from-ctp-blue to-ctp-mauve'>
+							<img src='${newGroup.imageUrl}' alt='Group image' class='w-full h-full object-cover opacity-60' />
+						</div>
+						<div class='p-4 sm:p-5'>
+							<h3 class='group-name text-base sm:text-lg font-bold mb-1'>${newGroup.name}</h3>
+							<p class='group-desc text-sm text-ctp-subtext0 mb-3'>${newGroup.description}</p>
+							<div class='flex justify-between items-center'>
+								<div class='flex -space-x-2'>
+									<img class='h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base' src='https://ui-avatars.com/api/?name=You&background=89b4fa&color=fff' alt='' />
+								</div>
+								<div class='text-sm font-medium text-ctp-subtext0'>$0.00</div>
+							</div>
+						</div>
+					</a>
+				`;
+				groupsContainer.insertBefore(newGroupCard, groupsContainer.firstChild);
+			}
+		">
+			@DashboardHeader()
+
+			<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+				<div class="mb-6 sm:mb-8 flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+					<h2 class="text-lg sm:text-xl font-bold">Your Groups</h2>
+					<button
+						@click="newGroupModal = true"
+						class="bg-ctp-blue hover:bg-ctp-blue/90 text-ctp-base font-medium py-2 px-4 rounded-md text-sm sm:text-base transition-colors"
+					>
+						+ New Group
+					</button>
+				</div>
+
+				<div class="relative" x-data="{ searchQuery: '', filteredGroups: [], noResults: false }"
+					x-init="filteredGroups = Array.from(document.querySelectorAll('.group-card'))"
+					@search-input.window="
+						searchQuery = $event.detail;
+						filteredGroups = Array.from(document.querySelectorAll('.group-card'));
+						if (searchQuery && searchQuery.trim() !== '') {
+							let matchFound = false;
+							filteredGroups.forEach(group => {
+								const groupName = group.querySelector('.group-name').textContent.toLowerCase();
+								const query = searchQuery.toLowerCase();
+
+								if (groupName.includes(query)) {
+									group.style.display = '';
+									matchFound = true;
+								} else {
+									group.style.display = 'none';
+								}
+							});
+							noResults = !matchFound;
+						} else {
+							filteredGroups.forEach(group => {
+								group.style.display = '';
+							});
+							noResults = false;
+						}
+					"
+				>
+					<div x-show="noResults" class="absolute inset-0 flex items-center justify-center text-ctp-subtext0 text-lg">
+						No groups match your search by name: '<span x-text="searchQuery"></span>'
+					</div>
+
+					<div class="groups-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+						@GroupCard("1", "Summer Trip 2023", "Trip to the beach with friends",
+							"https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+							"bg-gradient-to-r from-ctp-blue to-ctp-mauve", "+$120.00", "text-ctp-green", true) {
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Alice&background=89b4fa&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Bob&background=cba6f7&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Carol&background=f5c2e7&color=fff" alt=""/>
+							<div class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base bg-ctp-surface2 flex items-center justify-center text-xs">+2</div>
+						}
+
+						@GroupCard("2", "Apartment 4B", "Shared expenses with roommates",
+							"https://images.unsplash.com/photo-1574936687446-37484aee0102?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+							"bg-gradient-to-r from-ctp-peach to-ctp-red", "-$45.50", "text-ctp-red", true) {
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Dave&background=f9e2af&color=000" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Eve&background=a6e3a1&color=000" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Frank&background=89b4fa&color=fff" alt=""/>
+						}
+
+						@GroupCard("3", "Family Expenses", "Shared family bills and expenses",
+							"https://images.unsplash.com/photo-1528605248644-14dd04022da1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+							"bg-gradient-to-r from-ctp-green to-ctp-teal", "$0.00", "text-ctp-subtext0", false) {
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Mom&background=f5c2e7&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Dad&background=89b4fa&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Me&background=89b4fa&color=fff" alt=""/>
+						}
+
+						@GroupCard("4", "Friday Dinners", "Weekly dinner with college friends",
+							"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+							"bg-gradient-to-r from-ctp-pink to-ctp-maroon", "+$30.25", "text-ctp-green", false) {
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Grace&background=f5c2e7&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Hank&background=cba6f7&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Ivy&background=89b4fa&color=fff" alt=""/>
+							<div class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base bg-ctp-surface2 flex items-center justify-center text-xs">+3</div>
+						}
+
+						@GroupCard("5", "Road Trip 2023", "Cross-country road trip expenses",
+							"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+							"bg-gradient-to-r from-ctp-sky to-ctp-sapphire", "-$250.75", "text-ctp-red", false) {
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Jack&background=89b4fa&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Kate&background=f5c2e7&color=fff" alt=""/>
+						}
+
+						@GroupCard("6", "Office Pool", "Coffee and snack fund for the office",
+							"https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+							"bg-gradient-to-r from-ctp-lavender to-ctp-mauve", "+$15.00", "text-ctp-green", false) {
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Lisa&background=89b4fa&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Mike&background=cba6f7&color=fff" alt=""/>
+							<img class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base" src="https://ui-avatars.com/api/?name=Nina&background=f5c2e7&color=fff" alt=""/>
+							<div class="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-ctp-base bg-ctp-surface2 flex items-center justify-center text-xs">+5</div>
+						}
+					</div>
+				</div>
+			</main>
+
+			@DashboardSuccessAlert()
+			@InviteModal()
+			@LeaveModal()
+			@NewGroupModal()
+		</div>
+	}
+}
