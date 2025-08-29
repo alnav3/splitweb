@@ -182,82 +182,140 @@ templ TotalSummary(group GroupDetail) {
 	</div>
 }
 
-// New Charge Form component with HTMX
-templ NewChargeForm(members []Member) {
-	<div class="mb-4 sm:mb-6 bg-gradient-to-r from-ctp-blue/5 to-ctp-blue/10 rounded-xl border border-ctp-blue/20 shadow-lg">
-		<div class="p-4 sm:p-6">
-			<div class="flex items-center mb-4 sm:mb-5">
-				<div class="bg-ctp-blue/10 p-2 rounded-lg mr-3">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-ctp-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-					</svg>
-				</div>
-				<h3 class="text-base sm:text-lg font-semibold text-ctp-text">Add a New Charge</h3>
-			</div>
-			<form hx-post="/group/charges" hx-target="#charges-list" hx-swap="afterbegin" class="space-y-4 sm:space-y-5" @submit="showNewChargeForm = false">
-				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					<div>
-						<label for="description" class="block text-sm font-semibold text-ctp-subtext1 mb-2">What's this for?</label>
-						<input type="text" name="description" required class="block w-full rounded-lg border-ctp-surface2 bg-ctp-surface1/50 shadow-sm focus:border-ctp-blue focus:ring-ctp-blue focus:ring-2 focus:ring-opacity-20 sm:text-sm transition-all duration-200" placeholder="Dinner, Groceries, Gas..."/>
+// New Charge Modal component with HTMX (similar to dashboard style)
+templ NewChargeModal(members []Member) {
+	<div
+		x-show="newChargeModal"
+		class="fixed inset-0 z-50 overflow-y-auto"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-200"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+	>
+		<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+			<div
+				@click="newChargeModal = false"
+				class="fixed inset-0 bg-black/30 transition-opacity"
+			></div>
+
+			<div
+				class="relative bg-ctp-mantle rounded-lg shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
+				x-transition:enter="transition ease-out duration-300"
+				x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+				x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+			>
+				<div class="px-6 pt-6 pb-4">
+					<div class="flex items-center mb-4">
+						<div class="bg-ctp-blue/10 p-3 rounded-full mr-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ctp-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+							</svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-ctp-text">Add New Expense</h3>
+							<p class="text-sm text-ctp-subtext0">Split a new charge among group members</p>
+						</div>
 					</div>
 
-					<div>
-						<label for="amount" class="block text-sm font-semibold text-ctp-subtext1 mb-2">Amount</label>
-						<div class="relative rounded-lg shadow-sm">
-							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-								<span class="text-gray-500 sm:text-sm font-semibold">$</span>
+					<form hx-post="/group/charges" hx-target="#charges-list" hx-swap="afterbegin" @submit="
+						setTimeout(() => {
+							newChargeModal = false;
+							alertMessage = 'Expense added successfully!';
+							successAlert = true;
+							setTimeout(() => successAlert = false, 4000);
+						}, 500);
+					" class="space-y-4">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div class="sm:col-span-2">
+								<label for="description" class="block text-sm font-medium text-ctp-subtext1 mb-2">What's this expense for?</label>
+								<input
+									type="text"
+									id="description"
+									name="description"
+									required
+									class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors"
+									placeholder="Dinner, groceries, gas, etc."
+								/>
 							</div>
-							<input type="number" step="0.01" min="0.01" name="amount" required class="pl-8 block w-full rounded-lg border-ctp-surface2 bg-ctp-surface1/50 shadow-sm focus:border-ctp-blue focus:ring-ctp-blue focus:ring-2 focus:ring-opacity-20 sm:text-sm transition-all duration-200" placeholder="0.00"/>
-						</div>
-					</div>
 
-					<div>
-						<label for="paidBy" class="block text-sm font-semibold text-ctp-subtext1 mb-2">Who paid?</label>
-						<select name="paidBy" required class="block w-full rounded-lg border-ctp-surface2 bg-ctp-surface1/50 shadow-sm focus:border-ctp-blue focus:ring-ctp-blue focus:ring-2 focus:ring-opacity-20 sm:text-sm transition-all duration-200">
-							<option value="">Choose someone</option>
-							for _, member := range members {
-								<option value={ member.ID }>{ member.Name }</option>
-							}
-						</select>
-					</div>
-				</div>
-
-				<div class="sm:col-span-2 lg:col-span-3">
-					<label class="block text-sm font-semibold text-ctp-subtext1 mb-3">Split between these people</label>
-					<div class="bg-ctp-surface1/30 rounded-lg border border-ctp-surface2 p-3 sm:p-4 max-h-40 sm:max-h-48 overflow-y-auto">
-						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-							for _, member := range members {
-								<label class="flex items-center p-2 rounded-lg hover:bg-ctp-surface1/50 cursor-pointer transition-colors duration-150">
-									<input type="checkbox" name="participants" value={ member.ID } class="rounded border-ctp-surface2 text-ctp-blue focus:ring-ctp-blue focus:ring-2 focus:ring-opacity-20 h-4 w-4 flex-shrink-0"/>
-									<div class="ml-2 sm:ml-3 flex items-center min-w-0">
-										<img class="h-6 w-6 sm:h-8 sm:w-8 rounded-full mr-2 sm:mr-3 ring-2 ring-ctp-base flex-shrink-0" src={ member.ImageURL } alt={ member.Name }/>
-										<span class="text-xs sm:text-sm font-medium text-ctp-subtext1 truncate">{ member.Name }</span>
+							<div>
+								<label for="amount" class="block text-sm font-medium text-ctp-subtext1 mb-2">Amount</label>
+								<div class="relative rounded-lg shadow-sm">
+									<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+										<span class="text-ctp-subtext0 sm:text-sm">$</span>
 									</div>
-								</label>
-							}
-						</div>
-					</div>
-				</div>
+									<input
+										type="number"
+										step="0.01"
+										min="0.01"
+										id="amount"
+										name="amount"
+										required
+										class="pl-7 block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors"
+										placeholder="0.00"
+									/>
+								</div>
+							</div>
 
-				<div class="flex flex-col sm:flex-row gap-3 pt-2">
-					<button
-						type="submit"
-						class="flex-1 bg-ctp-blue hover:bg-ctp-blue/90 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center text-sm sm:text-base"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-						</svg>
-						Add Charge
-					</button>
-					<button
-						type="button"
-						@click="showNewChargeForm = false"
-						class="px-4 sm:px-6 py-2 sm:py-3 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1/50 font-semibold transition-all duration-200 text-sm sm:text-base"
-					>
-						Cancel
-					</button>
+							<div>
+								<label for="paidBy" class="block text-sm font-medium text-ctp-subtext1 mb-2">Who paid?</label>
+								<select
+									id="paidBy"
+									name="paidBy"
+									required
+									class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors"
+								>
+									<option value="">Choose who paid</option>
+									for _, member := range members {
+										<option value={ member.ID }>{ member.Name }</option>
+									}
+								</select>
+							</div>
+
+							<div class="sm:col-span-2">
+								<label class="block text-sm font-medium text-ctp-subtext1 mb-3">Split between these people</label>
+								<div class="bg-ctp-surface1/30 rounded-lg border border-ctp-surface2 p-4 max-h-48 overflow-y-auto">
+									<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+										for _, member := range members {
+											<label class="flex items-center p-2 rounded-lg hover:bg-ctp-surface1/50 cursor-pointer transition-colors duration-150">
+												<input type="checkbox" name="participants" value={ member.ID } class="rounded border-ctp-surface2 text-ctp-blue focus:ring-ctp-blue focus:ring-2 focus:ring-opacity-20 h-4 w-4 flex-shrink-0"/>
+												<div class="ml-3 flex items-center min-w-0">
+													<img class="h-8 w-8 rounded-full mr-3 ring-2 ring-ctp-base flex-shrink-0" src={ member.ImageURL } alt={ member.Name }/>
+													<span class="text-sm font-medium text-ctp-text truncate">{ member.Name }</span>
+												</div>
+											</label>
+										}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="flex flex-col sm:flex-row gap-3 pt-4">
+							<button
+								type="submit"
+								class="flex-1 bg-ctp-blue hover:bg-ctp-blue/90 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+								</svg>
+								Add Expense
+							</button>
+							<button
+								type="button"
+								@click="newChargeModal = false"
+								class="px-4 py-2 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1 font-semibold transition-all duration-200"
+							>
+								Cancel
+							</button>
+						</div>
+					</form>
 				</div>
-			</form>
+			</div>
 		</div>
 	</div>
 }
@@ -295,9 +353,9 @@ templ ChargeItem(charge Charge) {
 	</div>
 }
 
-// Charges Tab Content with Alpine.js
+// Charges Tab Content with Alpine.js (updated to use modal)
 templ ChargesTabContent(group GroupDetail) {
-	<div x-data="{ showNewChargeForm: false }">
+	<div>
 		<!-- Total Owed Summary -->
 		@TotalSummary(group)
 
@@ -305,24 +363,27 @@ templ ChargesTabContent(group GroupDetail) {
 		<div class="bg-ctp-mantle rounded-lg shadow">
 			<div class="p-4 sm:p-5">
 				<div class="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 mb-4 sm:mb-6">
-					<h2 class="text-lg sm:text-xl font-bold text-ctp-text">Charges</h2>
+					<h2 class="text-lg sm:text-xl font-bold text-ctp-text">Expenses</h2>
 					<button
-						@click="showNewChargeForm = !showNewChargeForm"
+						@click="newChargeModal = true"
 						class="bg-ctp-blue hover:bg-ctp-blue/90 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center"
-						x-text="showNewChargeForm ? 'Cancel' : '+ New Charge'"
 					>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+						</svg>
+						Add Expense
 					</button>
-				</div>
-
-				<!-- New Charge Form -->
-				<div x-show="showNewChargeForm" x-cloak>
-					@NewChargeForm(group.Members)
 				</div>
 
 				<!-- Charges List -->
 				<div id="charges-list" class="space-y-4">
 					if len(group.Charges) == 0 {
-						<p class="text-center py-4 text-ctp-subtext0">No charges yet. Add your first expense!</p>
+						<p class="text-center py-8 text-ctp-subtext0">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-ctp-surface2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+							</svg>
+							No expenses yet. Add your first expense to get started!
+						</p>
 					}
 
 					<!-- Existing charges from the backend -->
@@ -335,90 +396,127 @@ templ ChargesTabContent(group GroupDetail) {
 	</div>
 }
 
-// Settle Up Form component with HTMX
-templ SettleUpForm(members []Member) {
-	<div class="mb-4 sm:mb-6 bg-gradient-to-r from-ctp-green/10 to-ctp-green/5 rounded-xl border border-ctp-green/20 shadow-lg">
-		<div class="p-4 sm:p-6">
-			<div class="flex items-center mb-4 sm:mb-5">
-				<div class="bg-ctp-green/20 p-2 rounded-lg mr-3">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-ctp-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
-					</svg>
-				</div>
-				<h3 class="text-base sm:text-lg font-semibold text-ctp-text">Settle Up</h3>
-			</div>
-			<form hx-post="/group/settlements" class="space-y-4 sm:space-y-5" @submit="
-				showSettleForm = false;
-				setTimeout(() => {
-					alertMessage = 'Payment recorded successfully!';
-					successAlert = true;
-					setTimeout(() => successAlert = false, 3000);
-				}, 500);
-			">
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<div>
-						<label for="settle-with" class="block text-sm font-semibold text-ctp-subtext1 mb-2">Who are you settling with?</label>
-						<div class="relative">
-							<select name="settle-with" required class="block w-full rounded-lg border-ctp-surface2 bg-ctp-surface1/50 shadow-sm focus:border-green-500 focus:ring-green-500 focus:ring-2 focus:ring-opacity-20 sm:text-sm transition-all duration-200 appearance-none pr-10">
-								<option value="">Choose someone to pay</option>
-								for _, member := range members {
-									if member.ID != "me" {
-										<option value={ member.ID }>{ member.Name }</option>
+// Settle Up Modal component with HTMX (similar to dashboard style)
+templ SettleUpModal(members []Member) {
+	<div
+		x-show="settleModal"
+		class="fixed inset-0 z-50 overflow-y-auto"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-200"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+	>
+		<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+			<div
+				@click="settleModal = false"
+				class="fixed inset-0 bg-black/30 transition-opacity"
+			></div>
+
+			<div
+				class="relative bg-ctp-mantle rounded-lg shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+				x-transition:enter="transition ease-out duration-300"
+				x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+				x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+			>
+				<div class="px-6 pt-6 pb-4">
+					<div class="flex items-center mb-4">
+						<div class="bg-ctp-green/10 p-3 rounded-full mr-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ctp-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+							</svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-ctp-text">Settle Payment</h3>
+							<p class="text-sm text-ctp-subtext0">Record a payment between group members</p>
+						</div>
+					</div>
+
+					<form hx-post="/group/settlements" @submit="
+						setTimeout(() => {
+							settleModal = false;
+							alertMessage = 'Payment recorded successfully!';
+							successAlert = true;
+							setTimeout(() => successAlert = false, 4000);
+						}, 500);
+					" class="space-y-4">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div class="sm:col-span-2">
+								<label for="settle-with" class="block text-sm font-medium text-ctp-subtext1 mb-2">Who are you paying?</label>
+								<select
+									id="settle-with"
+									name="settle-with"
+									required
+									class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-green focus:border-ctp-green transition-colors"
+								>
+									<option value="">Choose who you're paying</option>
+									for _, member := range members {
+										if member.ID != "me" {
+											<option value={ member.ID }>{ member.Name }</option>
+										}
 									}
-								}
-							</select>
-							<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+								</select>
+							</div>
+
+							<div class="sm:col-span-2">
+								<label for="settle-amount" class="block text-sm font-medium text-ctp-subtext1 mb-2">Payment Amount</label>
+								<div class="relative rounded-lg shadow-sm">
+									<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+										<span class="text-ctp-subtext0 sm:text-sm">$</span>
+									</div>
+									<input
+										type="number"
+										step="0.01"
+										min="0.01"
+										id="settle-amount"
+										name="settle-amount"
+										required
+										class="pl-7 block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-green focus:border-ctp-green transition-colors"
+										placeholder="0.00"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div class="bg-ctp-green/10 rounded-lg p-4 border border-ctp-green/20">
+							<div class="flex items-start">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-ctp-green mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
 								</svg>
+								<p class="text-sm text-ctp-green font-medium">This will record a payment and update everyone's balances automatically.</p>
 							</div>
 						</div>
-					</div>
 
-					<div>
-						<label for="settle-amount" class="block text-sm font-semibold text-ctp-subtext1 mb-2">How much are you paying?</label>
-						<div class="relative rounded-lg shadow-sm">
-							<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-								<span class="text-ctp-green dark:text-green-400 sm:text-sm font-semibold">$</span>
-							</div>
-							<input type="number" step="0.01" min="0.01" name="settle-amount" required class="pl-8 block w-full rounded-lg border-ctp-surface2 bg-ctp-surface1/50 shadow-sm focus:border-green-500 focus:ring-green-500 focus:ring-2 focus:ring-opacity-20 sm:text-sm transition-all duration-200" placeholder="0.00"/>
+						<div class="flex flex-col sm:flex-row gap-3">
+							<button
+								type="submit"
+								class="flex-1 bg-ctp-green hover:bg-ctp-green/90 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+								</svg>
+								Record Payment
+							</button>
+							<button
+								type="button"
+								@click="settleModal = false"
+								class="px-4 py-2 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1 font-semibold transition-all duration-200"
+							>
+								Cancel
+							</button>
 						</div>
-					</div>
+					</form>
 				</div>
-
-				<div class="bg-ctp-green/10 rounded-lg p-3 sm:p-4 border border-ctp-green/20">
-					<div class="flex items-start">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-ctp-green mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
-						<p class="text-xs sm:text-sm text-ctp-green font-medium">This will record a payment and update everyone's balances.</p>
-					</div>
-				</div>
-
-				<div class="flex flex-col sm:flex-row gap-3 pt-2">
-					<button
-						type="submit"
-						class="flex-1 bg-ctp-green hover:bg-ctp-green/90 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center text-sm sm:text-base"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-						</svg>
-						Record Payment
-					</button>
-					<button
-						type="button"
-						@click="showSettleForm = false"
-						class="px-4 sm:px-6 py-2 sm:py-3 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1/50 font-semibold transition-all duration-200 text-sm sm:text-base"
-					>
-						Cancel
-					</button>
-				</div>
-			</form>
+			</div>
 		</div>
 	</div>
 }
 
-// Balance Item component with Alpine.js
+// Balance Item component with Alpine.js (updated to use modal)
 templ BalanceItem(member Member, debts []Debt) {
 	<div class="flex justify-between items-center py-3 border-b border-ctp-surface2 last:border-0">
 		<div class="flex items-center min-w-0 flex-1">
@@ -440,54 +538,41 @@ templ BalanceItem(member Member, debts []Debt) {
 			}
 		}
 		<button
-			@click="showSettleForm = true; $nextTick(() => document.querySelector('select[name=settle-with]').value = '{ member.ID }')"
-			class="ml-2 text-ctp-blue hover:text-ctp-blue/80 font-medium text-xs sm:text-sm px-2 py-1 rounded flex-shrink-0"
+			@click="settleModal = true; $nextTick(() => document.querySelector('select[name=settle-with]').value = '{ member.ID }')"
+			class="ml-2 bg-ctp-green/10 text-ctp-green hover:bg-ctp-green/20 font-medium text-xs sm:text-sm px-3 py-1 rounded-lg flex-shrink-0 transition-colors duration-200"
 		>
-			Settle
+			Pay
 		</button>
 	</div>
 }
 
-// Balances Tab Content with Alpine.js
+// Balances Tab Content with Alpine.js (updated to use modal)
 templ BalancesTabContent(group GroupDetail) {
-	<div x-data="{ showSettleForm: false, successAlert: false, alertMessage: '' }">
-		<!-- Success Alert -->
-		<div
-			x-show="successAlert"
-			x-transition:enter="transition ease-out duration-300"
-			x-transition:enter-start="opacity-0 transform translate-y-2"
-			x-transition:enter-end="opacity-100 transform translate-y-0"
-			x-transition:leave="transition ease-in duration-200"
-			x-transition:leave-start="opacity-100 transform translate-y-0"
-			x-transition:leave-end="opacity-0 transform translate-y-2"
-			class="fixed top-4 right-4 z-50 bg-ctp-green text-white px-6 py-4 rounded-lg shadow-lg max-w-sm"
-		>
-			<div class="flex items-center">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-				</svg>
-				<p class="font-medium" x-text="alertMessage"></p>
-			</div>
-		</div>
-
+	<div>
 		<div class="bg-ctp-mantle rounded-lg shadow">
 			<div class="p-4 sm:p-5">
 				<div class="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 mb-4 sm:mb-6">
 					<h2 class="text-lg sm:text-xl font-bold text-ctp-text">Your Balances</h2>
 					<button
-						@click="showSettleForm = !showSettleForm"
+						@click="settleModal = true"
 						class="bg-ctp-green hover:bg-ctp-green/90 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center"
-						x-text="showSettleForm ? 'Cancel' : '+ Settle Up'"
 					>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+						</svg>
+						Settle Payment
 					</button>
 				</div>
 
-				<!-- Settle Up Form -->
-				<div x-show="showSettleForm" x-cloak>
-					@SettleUpForm(group.Members)
-				</div>
-
 				<div id="balances-list" class="space-y-4">
+					if len(group.Members) <= 1 {
+						<p class="text-center py-8 text-ctp-subtext0">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-ctp-surface2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+							</svg>
+							No other members to show balances with. Invite someone to get started!
+						</p>
+					}
 					<!-- Individual balances with other members -->
 					for _, member := range group.Members {
 						if member.ID != "me" {
@@ -630,23 +715,23 @@ templ BreakdownTabContent(group GroupDetail) {
 	</div>
 }
 
-// Success Alert component (floating notification)
-templ SuccessAlert(message string) {
-	<div id="success-alert" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg max-w-sm"
-		 x-data="{ show: true }"
-		 x-show="show"
-		 x-init="setTimeout(() => show = false, 3000)"
-		 x-transition:enter="transition ease-out duration-300"
-		 x-transition:enter-start="opacity-0 transform translate-x-full"
-		 x-transition:enter-end="opacity-100 transform translate-x-0"
-		 x-transition:leave="transition ease-in duration-300"
-		 x-transition:leave-start="opacity-100 transform translate-x-0"
-		 x-transition:leave-end="opacity-0 transform translate-x-full">
+// Success/Error Alert component (floating notification like dashboard)
+templ GroupSuccessAlert() {
+	<div
+		x-show="successAlert"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0 transform translate-y-2"
+		x-transition:enter-end="opacity-100 transform translate-y-0"
+		x-transition:leave="transition ease-in duration-200"
+		x-transition:leave-start="opacity-100 transform translate-y-0"
+		x-transition:leave-end="opacity-0 transform translate-y-2"
+		:class="errorAlert ? 'fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : 'fixed top-4 right-4 z-50 bg-ctp-green text-white px-6 py-4 rounded-lg shadow-lg max-w-sm'"
+	>
 		<div class="flex items-center">
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="errorAlert ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z' : 'M5 13l4 4L19 7'"/>
 			</svg>
-			<p class="font-medium">{ message }</p>
+			<p class="font-medium" x-text="alertMessage"></p>
 		</div>
 	</div>
 }
@@ -654,7 +739,13 @@ templ SuccessAlert(message string) {
 // Main template
 templ GroupDetailPage(group GroupDetail) {
 	@Layout("SplitWeb - " + group.Name) {
-		<div class="min-h-screen flex flex-col">
+		<div class="min-h-screen flex flex-col" x-data="{
+			newChargeModal: false,
+			settleModal: false,
+			successAlert: false,
+			errorAlert: false,
+			alertMessage: ''
+		}">
 			<!-- Header -->
 			@GroupHeader(group)
 
@@ -671,8 +762,12 @@ templ GroupDetailPage(group GroupDetail) {
 				</div>
 			</div>
 
-			<!-- Footer -->
+			<!-- Modals -->
+			@NewChargeModal(group.Members)
+			@SettleUpModal(group.Members)
+			
+			<!-- Success/Error Alerts -->
+			@GroupSuccessAlert()
 		</div>
-
 	}
 }
