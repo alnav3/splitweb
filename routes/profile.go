@@ -39,12 +39,9 @@ func ProfileChangeEmailHandler(w http.ResponseWriter, r *http.Request) {
 	// In a real app, validate password and update email
 	log.Printf("Email change requested: new email: %s, password provided: %t", newEmail, currentPassword != "")
 
-	// Return success alert
-	err = templates.Alert("Verification email sent to "+newEmail, "success").Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		log.Printf("Error rendering template: %v", err)
-	}
+	// Return success response - the frontend will handle the popup
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("success"))
 }
 
 func ProfileChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,77 +62,60 @@ func ProfileChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Basic validation
 	if newPassword != confirmPassword {
-		err = templates.Alert("Passwords do not match", "error").Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Passwords do not match"))
 		return
 	}
 
 	if len(newPassword) < 8 {
-		err = templates.Alert("Password must be at least 8 characters long", "error").Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Password must be at least 8 characters long"))
 		return
 	}
 
 	// Get user from session
 	token, userId, authenticated := auth.GetUserFromSession(r)
 	if !authenticated {
-		err = templates.Alert("Please log in to change your password", "error").Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Please log in to change your password"))
 		return
 	}
 
 	// Get user email for re-login
 	userRecord, err := auth.GetUserRecord(token, userId)
 	if err != nil {
-		err = templates.Alert("Failed to retrieve user information", "error").Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to retrieve user information"))
 		return
 	}
 
 	// Change password
 	err = auth.ChangePasswordWithOlderOne(currentPassword, newPassword, confirmPassword, token, userId)
 	if err != nil {
-		err = templates.Alert("Failed to change password: "+err.Error(), "error").Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to change password: " + err.Error()))
 		return
 	}
 
 	// Re-authenticate with new password
 	authResponse, err := auth.AuthWithPassword(userRecord.Email, newPassword)
 	if err != nil {
-		err = templates.Alert("Password changed but failed to re-authenticate. Please log in again.", "error").Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Password changed but failed to re-authenticate. Please log in again."))
 		return
 	}
 
 	// Update session with new token
 	err = auth.SetUserSession(r, w, authResponse.Token, authResponse.Record.Id)
 	if err != nil {
-		err = templates.Alert("Password changed but failed to update session. Please log in again.", "error").Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Password changed but failed to update session. Please log in again."))
 		return
 	}
 
-	// Return success alert
-	err = templates.Alert("Password updated successfully", "success").Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		log.Printf("Error rendering template: %v", err)
-	}
+	// Return success response
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("success"))
 }
 
 func ProfileDeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
