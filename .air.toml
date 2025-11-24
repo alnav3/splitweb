@@ -7,11 +7,11 @@ tmp_dir = "tmp"
 
 [build]
 # Just a command for hot reloading
-cmd = "templ generate && tailwindcss -i ./front/setup.css -o ./style/tailwind.css && go build -o ./tmp/main ."
+cmd = "templ generate && tailwindcss -i ./front/setup.css -o ./style/tailwind.css &&  go build -o ./tmp/main ."
 # Binary file yields from `cmd`.
 bin = "tmp/main"
 # Customize binary
-full_bin = "PORT=8081 ./tmp/main"
+full_bin = "infisical run --env=dev -- ./tmp/main"
 # Watch these filename extensions.
 include_ext = ["go", "css", "js", "html", "templ"]
 # Ignore these paths.
