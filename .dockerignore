@@ -1,0 +1,36 @@
+# Version control
+.git/
+.gitignore
+
+# Development files
+.air.toml
+tmp/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Development dependencies
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+TODO.md
+
+# Build artifacts
+style/tailwind.css
