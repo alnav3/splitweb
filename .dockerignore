@@ -32,5 +32,5 @@ Thumbs.db
 README.md
 TODO.md
 
-# Build artifacts
+# Build artifacts - exclude local CSS since we generate it in Docker
 style/tailwind.css
