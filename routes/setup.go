@@ -68,7 +68,7 @@ func SetupRoutes(repo *databaselogic.Repository) {
 	http.HandleFunc("/auth/logout", AuthLogoutHandler)
 
 	// Profile form handlers (protected)
-	http.HandleFunc("/profile/email", auth.RequireAuth(ProfileChangeEmailHandler))
-	http.HandleFunc("/profile/password", auth.RequireAuth(ProfileChangePasswordHandler))
+	http.HandleFunc("POST /profile/email", auth.RequireAuth(ProfileChangeEmailHandler))
+	http.HandleFunc("POST /profile/password", auth.RequireAuth(ProfileChangePasswordHandler))
 	http.HandleFunc("/profile/delete", auth.RequireAuth(ProfileDeleteAccountHandler))
 }

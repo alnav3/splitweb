@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -25,13 +26,31 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Error rendering template: userId not valid")
 }
 
+// verifyUserAndPassword validates session and current password
+func verifyUserAndPassword(r *http.Request, currentPassword string) (token, userId, userEmail string, err error) {
+	// Get user from session
+	token, userId, authenticated := auth.GetUserFromSession(r)
+	if !authenticated {
+		return "", "", "", fmt.Errorf("please log in to perform this action")
+	}
+
+	// Get user email for password verification
+	userRecord, err := auth.GetUserRecord(token, userId)
+	if err != nil {
+		return "", "", "", fmt.Errorf("failed to retrieve user information")
+	}
+
+	// Verify current password
+	err = auth.VerifyCurrentPassword(userRecord.Email, currentPassword)
+	if err != nil {
+		return "", "", "", fmt.Errorf("incorrect current password")
+	}
+
+	return token, userId, userRecord.Email, nil
+}
+
 // Profile form handlers
 func ProfileChangeEmailHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	err := r.ParseForm()
 	if err != nil {
@@ -42,19 +61,41 @@ func ProfileChangeEmailHandler(w http.ResponseWriter, r *http.Request) {
 	newEmail := r.FormValue("new-email")
 	currentPassword := r.FormValue("current-password")
 
-	// In a real app, validate password and update email
-	log.Printf("Email change requested: new email: %s, password provided: %t", newEmail, currentPassword != "")
+	// Basic validation
+	if newEmail == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("New email is required"))
+		return
+	}
 
-	// Return success response - the frontend will handle the popup
+	if currentPassword == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Current password is required"))
+		return
+	}
+
+	// Verify user and password
+	token, _, _, err := verifyUserAndPassword(r, currentPassword)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	// Request email change
+	err = auth.RequestEmailChange(newEmail, token)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to request email change: " + err.Error()))
+		return
+	}
+
+	// Return success response
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("success"))
 }
 
 func ProfileChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	err := r.ParseForm()
 	if err != nil {
@@ -79,19 +120,11 @@ func ProfileChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user from session
-	token, userId, authenticated := auth.GetUserFromSession(r)
-	if !authenticated {
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Please log in to change your password"))
-		return
-	}
-
-	// Get user email for re-login
-	userRecord, err := auth.GetUserRecord(token, userId)
+	// Verify user and password
+	token, userId, userEmail, err := verifyUserAndPassword(r, currentPassword)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Failed to retrieve user information"))
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -104,7 +137,7 @@ func ProfileChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Re-authenticate with new password
-	authResponse, err := auth.AuthWithPassword(userRecord.Email, newPassword, Repo)
+	authResponse, err := auth.AuthWithPassword(userEmail, newPassword, Repo)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Password changed but failed to re-authenticate. Please log in again."))

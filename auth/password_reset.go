@@ -100,3 +100,32 @@ func ChangePasswordWithOlderOne(oldPassword, password, passwordConfirm, token, u
 
 	return nil
 }
+
+// VerifyCurrentPassword verifies if the provided password is correct for the user
+func VerifyCurrentPassword(userEmail, password string) error {
+	pocketBaseUrl, err := getPocketBaseURL()
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("%s/api/collections/Splitweb_users/auth-with-password", pocketBaseUrl)
+
+	requestBody, err := json.Marshal(map[string]string{
+		"identity": userEmail,
+		"password": password,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("incorrect current password")
+	}
+
+	return nil
+}
