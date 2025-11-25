@@ -61,7 +61,7 @@ func SetupRoutes(repo *databaselogic.Repository) {
 	http.HandleFunc("/group/invite", auth.RequireAuth(InviteMemberHandler))
 
 	// Authentication form handlers
-	http.HandleFunc("/auth/login", AuthLoginHandler)
+	http.HandleFunc("POST /auth/login", AuthLoginHandler)
 	http.HandleFunc("/auth/register", AuthRegisterHandler)
 	http.HandleFunc("/auth/forgot-password", AuthForgotPasswordHandler)
 	http.HandleFunc("/auth/resend-reset", AuthResendResetHandler)

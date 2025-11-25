@@ -35,11 +35,6 @@ func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 // Authentication form handlers
 func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
