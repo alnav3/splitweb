@@ -20,7 +20,9 @@ FROM golang:1.24.6-alpine AS go-builder
 
 WORKDIR /app
 
+# Install required tools
 RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -29,6 +31,10 @@ COPY . .
 
 COPY --from=css-builder /app/style/tailwind.css ./style/
 
+# Generate sqlc code first
+RUN sqlc generate
+
+# Generate templ code
 RUN templ generate
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
