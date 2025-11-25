@@ -117,3 +117,32 @@ func GetUserRecord(token, userID string) (*Record, error) {
 
 	return &record, nil
 }
+
+func DeleteUserAccount(token, userID string) error {
+	pocketBaseUrl, err := getPocketBaseURL()
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("%s/api/collections/Splitweb_users/records/%s", pocketBaseUrl, userID)
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 204 {
+		return fmt.Errorf("failed to delete user account: status %d", resp.StatusCode)
+	}
+
+	return nil
+}

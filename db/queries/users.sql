@@ -10,3 +10,7 @@ WHERE id = $1;
 INSERT INTO users (id, email, name, avatar_url)
 VALUES ($1, $2, $3, $4);
 
+-- name: DeleteUserById :exec
+DELETE FROM users
+where id = $1;
+

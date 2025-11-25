@@ -158,15 +158,46 @@ func ProfileChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProfileDeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+	currentPassword := r.FormValue("current-password")
+
+	// Basic validation
+	if currentPassword == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Current password is required to delete account"))
 		return
 	}
 
-	// In a real app, delete user account and all associated data
-	log.Printf("Account deletion requested")
+	// Verify user and password
+	token, userId, _, err := verifyUserAndPassword(r, currentPassword)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
 
-	// For demo purposes, redirect to login
+	// Delete user from PocketBase
+	err = auth.DeleteUserAccount(token, userId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to delete account: " + err.Error()))
+		return
+	}
+
+	// Delete user from local database
+	err = Repo.Queries.DeleteUserById(Repo.Context, userId)
+	if err != nil {
+		log.Printf("Failed to delete user from local database: %v", err)
+		// Continue even if local deletion fails, as the PocketBase deletion succeeded
+	}
+
+	// Clear the session and redirect to login
+	err = auth.ClearSession(r, w)
+	if err != nil {
+		log.Printf("Failed to clear session: %v", err)
+		// Continue anyway, as the account deletion succeeded
+	}
+
 	w.Header().Set("HX-Redirect", "/login")
 	w.WriteHeader(http.StatusOK)
 }
