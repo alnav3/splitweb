@@ -104,7 +104,7 @@ func ProfileChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Re-authenticate with new password
-	authResponse, err := auth.AuthWithPassword(userRecord.Email, newPassword)
+	authResponse, err := auth.AuthWithPassword(userRecord.Email, newPassword, Repo)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Password changed but failed to re-authenticate. Please log in again."))

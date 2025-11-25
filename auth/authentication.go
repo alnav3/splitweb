@@ -36,6 +36,10 @@ func AuthWithPassword(identity, password string, Repo *databaselogic.Repository)
 	}
 
 	var authResponse AuthResponse
+	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
+		return nil, err
+	}
+
 	userID := authResponse.Record.Id
 	user, err := Repo.Queries.FindUserById(Repo.Context, userID)
 	if err != nil || user.ID == ""{
@@ -46,10 +50,6 @@ func AuthWithPassword(identity, password string, Repo *databaselogic.Repository)
 			Email: authResponse.Record.Email,
 			AvatarUrl: &authResponse.Record.Avatar,
 		})
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
-		return nil, err
 	}
 
 	return &authResponse, nil

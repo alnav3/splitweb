@@ -54,7 +54,7 @@ func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Authenticate with PocketBase
-	authResponse, err := auth.AuthWithPassword(email, password)
+	authResponse, err := auth.AuthWithPassword(email, password, Repo)
 	if err != nil {
 		log.Printf("Authentication failed for %s: %v", email, err)
 		w.WriteHeader(http.StatusUnauthorized)
