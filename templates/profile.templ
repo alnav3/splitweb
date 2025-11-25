@@ -82,7 +82,7 @@ templ ProfileAlert() {
 		x-transition:leave="transition ease-in duration-200"
 		x-transition:leave-start="opacity-100 transform translate-y-0"
 		x-transition:leave-end="opacity-0 transform translate-y-2"
-		:class="profileAlertType === 'email' ? 'fixed top-4 right-4 z-50 bg-ctp-blue text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'password' ? 'fixed top-4 right-4 z-50 bg-ctp-peach text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'success' ? 'fixed top-4 right-4 z-50 bg-ctp-green text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : 'fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm'"
+		:class="profileAlertType === 'email' ? 'fixed top-4 right-4 z-50 bg-ctp-blue text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'password' ? 'fixed top-4 right-4 z-50 bg-ctp-peach text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'success' ? 'fixed top-4 right-4 z-50 bg-ctp-green text-black px-6 py-4 rounded-lg shadow-lg max-w-sm' : 'fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm'"
 	>
 		<div class="flex items-center">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,17 +167,6 @@ templ ChangeEmailForm() {
 						/>
 					</div>
 
-					<div>
-						<label for="email-password" class="block text-sm font-semibold text-ctp-subtext1 mb-2">Current Password</label>
-						<input
-							type="password"
-							id="email-password"
-							name="current-password"
-							required
-							class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors text-sm sm:text-base"
-							placeholder="Confirm with your current password"
-						/>
-					</div>
 
 					<div class="bg-ctp-blue/10 rounded-lg p-3 sm:p-4 border border-ctp-blue/20">
 						<div class="flex items-start">

@@ -59,7 +59,6 @@ func ProfileChangeEmailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newEmail := r.FormValue("new-email")
-	currentPassword := r.FormValue("current-password")
 
 	// Basic validation
 	if newEmail == "" {
@@ -68,17 +67,10 @@ func ProfileChangeEmailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if currentPassword == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Current password is required"))
-		return
-	}
-
-	// Verify user and password
-	token, _, _, err := verifyUserAndPassword(r, currentPassword)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+	token, _, authenticated := auth.GetUserFromSession(r)
+	if !authenticated {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Please log in to perform this action"))
 		return
 	}
 
