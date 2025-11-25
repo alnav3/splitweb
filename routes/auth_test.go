@@ -12,8 +12,8 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	// Set up test environment
-	os.Setenv("POCKET_BASE_URL", "http://10.71.71.10:8090")
+	// Set up test environment - using localhost to avoid external calls
+	os.Setenv("POCKET_BASE_URL", "http://localhost:99999") // Non-existent port for safety
 	os.Setenv("SESSION_SECRET", "test-secret-key")
 
 	// Run tests
@@ -165,6 +165,24 @@ func TestAuthForgotPasswordHandler_EmptyEmail(t *testing.T) {
 }
 
 func TestAuthForgotPasswordHandler_NonExistentEmail(t *testing.T) {
+	// Create a mock server that simulates PocketBase behavior 
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Simulate PocketBase behavior - returns 204 even for non-existent emails (security)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	// Set the mock server URL
+	originalURL := os.Getenv("POCKET_BASE_URL")
+	os.Setenv("POCKET_BASE_URL", server.URL)
+	defer func() {
+		if originalURL != "" {
+			os.Setenv("POCKET_BASE_URL", originalURL)
+		} else {
+			os.Unsetenv("POCKET_BASE_URL")
+		}
+	}()
+
 	// Create form data with non-existent email
 	form := url.Values{}
 	form.Add("email", "definitely-not-existing@nonexistent-domain-12345.com")
@@ -176,13 +194,12 @@ func TestAuthForgotPasswordHandler_NonExistentEmail(t *testing.T) {
 
 	AuthForgotPasswordHandler(w, req)
 
-	// PocketBase may not return error for non-existent emails (good security practice)
-	// Both success and error responses are acceptable
-	if w.Code != http.StatusOK && w.Code != http.StatusBadRequest {
-		t.Errorf("Expected status %d or %d, got %d", http.StatusOK, http.StatusBadRequest, w.Code)
+	// Should return 200 OK (successful form processing)
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status %d, got %d", http.StatusOK, w.Code)
 	}
 
-	t.Logf("Forgot password handler response: %d (both success and error are valid)", w.Code)
+	t.Logf("Forgot password handler response: %d", w.Code)
 }
 
 func TestAuthLogoutHandler(t *testing.T) {

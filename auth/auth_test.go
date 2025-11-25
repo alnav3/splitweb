@@ -33,7 +33,7 @@ func (m *MockDB) Exec(ctx context.Context, sql string, args ...interface{}) (pgc
 		email, ok2 := args[1].(string)
 		name, _ := args[2].(*string)
 		avatarUrl, _ := args[3].(*string)
-		
+
 		if ok1 && ok2 {
 			m.users[id] = internalRepository.User{
 				ID:            id,
@@ -79,7 +79,7 @@ func (r *MockRow) Scan(dest ...interface{}) error {
 	if r.user == nil {
 		return fmt.Errorf("no rows in result set")
 	}
-	
+
 	// Map the user fields to the destination variables
 	if len(dest) >= 7 {
 		if idPtr, ok := dest[0].(*string); ok {
@@ -111,7 +111,7 @@ func (r *MockRow) Scan(dest ...interface{}) error {
 func createTestRepo() *databaselogic.Repository {
 	mockDB := NewMockDB()
 	queries := internalRepository.New(mockDB)
-	
+
 	return &databaselogic.Repository{
 		Queries: queries,
 		Pool:    nil,
@@ -121,8 +121,7 @@ func createTestRepo() *databaselogic.Repository {
 }
 
 func TestMain(m *testing.M) {
-	// Set up test environment
-	os.Setenv("POCKET_BASE_URL", "http://10.71.71.10:8090")
+	os.Setenv("POCKET_BASE_URL", "http://localhost:99999")
 	os.Setenv("SESSION_SECRET", "test-secret-key")
 	os.Setenv("DATABASE_URL", "postgresql://test:test@localhost/test_db") // Mock for tests
 
@@ -138,8 +137,34 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuthWithPassword_ValidCredentials(t *testing.T) {
-	// Note: This test requires a valid user in PocketBase
-	// You may need to create a test user first
+	// Create a mock server that simulates successful PocketBase authentication
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Simulate successful authentication response
+		response := `{
+			"token": "mock-jwt-token-12345",
+			"record": {
+				"id": "mock-user-id-123",
+				"email": "test@example.com",
+				"name": "Test User",
+				"avatar": "",
+				"verified": true
+			}
+		}`
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(response))
+	}))
+	defer server.Close()
+
+	// Set the mock server URL
+	originalURL := os.Getenv("POCKET_BASE_URL")
+	os.Setenv("POCKET_BASE_URL", server.URL)
+	defer func() {
+		if originalURL != "" {
+			os.Setenv("POCKET_BASE_URL", originalURL)
+		} else {
+			os.Unsetenv("POCKET_BASE_URL")
+		}
+	}()
 
 	email := "test@example.com"
 	password := "testpassword"
@@ -148,10 +173,7 @@ func TestAuthWithPassword_ValidCredentials(t *testing.T) {
 	authResponse, err := AuthWithPassword(email, password, repo)
 
 	if err != nil {
-		// If authentication fails, it might be because the user doesn't exist
-		// This is expected for integration tests
-		t.Logf("Authentication failed (expected if test user doesn't exist): %v", err)
-		return
+		t.Fatalf("Expected successful authentication, got error: %v", err)
 	}
 
 	if authResponse == nil {
@@ -211,14 +233,29 @@ func TestValidateToken_EmptyToken(t *testing.T) {
 }
 
 func TestRequestPasswordReset_ValidEmail(t *testing.T) {
-	// Test with a potentially valid email format
-	email := "test@example.com"
+	// Create a mock server that simulates PocketBase password reset
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Simulate successful password reset request (returns 204)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
 
+	// Set the mock server URL
+	originalURL := os.Getenv("POCKET_BASE_URL")
+	os.Setenv("POCKET_BASE_URL", server.URL)
+	defer func() {
+		if originalURL != "" {
+			os.Setenv("POCKET_BASE_URL", originalURL)
+		} else {
+			os.Unsetenv("POCKET_BASE_URL")
+		}
+	}()
+
+	email := "test@example.com"
 	err := RequestPasswordReset(email)
 
-	// This might fail if the email doesn't exist in PocketBase, which is expected
 	if err != nil {
-		t.Logf("Password reset request failed (expected if email doesn't exist): %v", err)
+		t.Errorf("Expected successful password reset request, got error: %v", err)
 	} else {
 		t.Logf("Password reset request successful for email: %s", email)
 	}
