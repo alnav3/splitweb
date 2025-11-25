@@ -1,16 +1,130 @@
 package auth
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
+
+	databaselogic "github.com/alnav3/splitweb/db/database_logic"
+	internalRepository "github.com/alnav3/splitweb/db/internal_repository"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
+
+// MockDB implements the DBTX interface for testing
+type MockDB struct {
+	users map[string]internalRepository.User
+}
+
+func NewMockDB() *MockDB {
+	return &MockDB{
+		users: make(map[string]internalRepository.User),
+	}
+}
+
+func (m *MockDB) Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error) {
+	// Handle INSERT INTO users queries
+	if len(args) >= 4 {
+		id, ok1 := args[0].(string)
+		email, ok2 := args[1].(string)
+		name, _ := args[2].(*string)
+		avatarUrl, _ := args[3].(*string)
+		
+		if ok1 && ok2 {
+			m.users[id] = internalRepository.User{
+				ID:            id,
+				Email:         email,
+				Name:          name,
+				AvatarUrl:     avatarUrl,
+				CreatedAt:     time.Now(),
+				UpdatedAt:     time.Now(),
+				TotalExpenses: 0,
+			}
+		}
+	}
+	return pgconn.CommandTag{}, nil
+}
+
+func (m *MockDB) Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error) {
+	// Not needed for our auth tests
+	return nil, fmt.Errorf("query not implemented in mock")
+}
+
+func (m *MockDB) QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row {
+	// Handle FindUserById query
+	if len(args) > 0 {
+		if id, ok := args[0].(string); ok {
+			if user, exists := m.users[id]; exists {
+				return &MockRow{user: &user, err: nil}
+			}
+		}
+	}
+	return &MockRow{user: nil, err: fmt.Errorf("user not found")}
+}
+
+// MockRow implements pgx.Row for testing
+type MockRow struct {
+	user *internalRepository.User
+	err  error
+}
+
+func (r *MockRow) Scan(dest ...interface{}) error {
+	if r.err != nil {
+		return r.err
+	}
+	if r.user == nil {
+		return fmt.Errorf("no rows in result set")
+	}
+	
+	// Map the user fields to the destination variables
+	if len(dest) >= 7 {
+		if idPtr, ok := dest[0].(*string); ok {
+			*idPtr = r.user.ID
+		}
+		if emailPtr, ok := dest[1].(*string); ok {
+			*emailPtr = r.user.Email
+		}
+		if namePtr, ok := dest[2].(**string); ok {
+			*namePtr = r.user.Name
+		}
+		if avatarPtr, ok := dest[3].(**string); ok {
+			*avatarPtr = r.user.AvatarUrl
+		}
+		if createdPtr, ok := dest[4].(*time.Time); ok {
+			*createdPtr = r.user.CreatedAt
+		}
+		if updatedPtr, ok := dest[5].(*time.Time); ok {
+			*updatedPtr = r.user.UpdatedAt
+		}
+		if totalPtr, ok := dest[6].(*float64); ok {
+			*totalPtr = r.user.TotalExpenses
+		}
+	}
+	return nil
+}
+
+// createTestRepo creates a proper repository with mock database for testing
+func createTestRepo() *databaselogic.Repository {
+	mockDB := NewMockDB()
+	queries := internalRepository.New(mockDB)
+	
+	return &databaselogic.Repository{
+		Queries: queries,
+		Pool:    nil,
+		DB:      nil,
+		Context: context.Background(),
+	}
+}
 
 func TestMain(m *testing.M) {
 	// Set up test environment
 	os.Setenv("POCKET_BASE_URL", "http://10.71.71.10:8090")
 	os.Setenv("SESSION_SECRET", "test-secret-key")
+	os.Setenv("DATABASE_URL", "postgresql://test:test@localhost/test_db") // Mock for tests
 
 	// Run tests
 	code := m.Run()
@@ -18,6 +132,7 @@ func TestMain(m *testing.M) {
 	// Clean up
 	os.Unsetenv("POCKET_BASE_URL")
 	os.Unsetenv("SESSION_SECRET")
+	os.Unsetenv("DATABASE_URL")
 
 	os.Exit(code)
 }
@@ -28,8 +143,9 @@ func TestAuthWithPassword_ValidCredentials(t *testing.T) {
 
 	email := "test@example.com"
 	password := "testpassword"
+	repo := createTestRepo()
 
-	authResponse, err := AuthWithPassword(email, password)
+	authResponse, err := AuthWithPassword(email, password, repo)
 
 	if err != nil {
 		// If authentication fails, it might be because the user doesn't exist
@@ -56,8 +172,9 @@ func TestAuthWithPassword_ValidCredentials(t *testing.T) {
 func TestAuthWithPassword_InvalidCredentials(t *testing.T) {
 	email := "nonexistent@example.com"
 	password := "wrongpassword"
+	repo := createTestRepo()
 
-	authResponse, err := AuthWithPassword(email, password)
+	authResponse, err := AuthWithPassword(email, password, repo)
 
 	if err == nil {
 		t.Error("Expected authentication to fail with invalid credentials")

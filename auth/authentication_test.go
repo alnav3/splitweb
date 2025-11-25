@@ -61,8 +61,10 @@ func TestGetUserRecord_EmptyUserID(t *testing.T) {
 }
 
 func TestAuthWithPassword_EmptyCredentials(t *testing.T) {
+	repo := createTestRepo()
+	
 	// Test empty identity
-	authResponse, err := AuthWithPassword("", "password")
+	authResponse, err := AuthWithPassword("", "password", repo)
 	if err == nil {
 		t.Error("Expected authentication to fail with empty identity")
 	}
@@ -71,7 +73,7 @@ func TestAuthWithPassword_EmptyCredentials(t *testing.T) {
 	}
 
 	// Test empty password
-	authResponse, err = AuthWithPassword("user@example.com", "")
+	authResponse, err = AuthWithPassword("user@example.com", "", repo)
 	if err == nil {
 		t.Error("Expected authentication to fail with empty password")
 	}
@@ -80,7 +82,7 @@ func TestAuthWithPassword_EmptyCredentials(t *testing.T) {
 	}
 
 	// Test both empty
-	authResponse, err = AuthWithPassword("", "")
+	authResponse, err = AuthWithPassword("", "", repo)
 	if err == nil {
 		t.Error("Expected authentication to fail with empty credentials")
 	}
@@ -105,8 +107,9 @@ func TestAuthWithPassword_NetworkError(t *testing.T) {
 	// Test with invalid PocketBase URL to simulate network error
 	originalURL := os.Getenv("POCKET_BASE_URL")
 	os.Setenv("POCKET_BASE_URL", "http://invalid-url-12345.com")
+	repo := createTestRepo()
 
-	authResponse, err := AuthWithPassword("test@example.com", "password")
+	authResponse, err := AuthWithPassword("test@example.com", "password", repo)
 
 	// Restore original URL
 	if originalURL != "" {
@@ -199,9 +202,10 @@ func TestAuthWithPassword_MockServerResponse(t *testing.T) {
 			// Set test server URL
 			originalURL := os.Getenv("POCKET_BASE_URL")
 			os.Setenv("POCKET_BASE_URL", server.URL)
+			repo := createTestRepo()
 
 			// Test AuthWithPassword
-			authResponse, err := AuthWithPassword("test@example.com", "password")
+			authResponse, err := AuthWithPassword("test@example.com", "password", repo)
 
 			// Restore original URL
 			if originalURL != "" {

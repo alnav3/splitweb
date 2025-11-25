@@ -23,8 +23,6 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("MIDDLEWARE: Token validation successful for user %s", userId)
-
 		next(w, r)
 	}
 }

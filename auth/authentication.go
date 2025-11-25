@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	databaselogic "github.com/alnav3/splitweb/db/database_logic"
+	internalRepository "github.com/alnav3/splitweb/db/internal_repository"
 )
 
-func AuthWithPassword(identity, password string) (*AuthResponse, error) {
+func AuthWithPassword(identity, password string, Repo *databaselogic.Repository) (*AuthResponse, error) {
 	pocketBaseUrl, err := getPocketBaseURL()
 	if err != nil {
 		return nil, err
@@ -35,6 +38,18 @@ func AuthWithPassword(identity, password string) (*AuthResponse, error) {
 	var authResponse AuthResponse
 	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
 		return nil, err
+	}
+
+	userID := authResponse.Record.Id
+	user, err := Repo.Queries.FindUserById(Repo.Context, userID)
+	if err != nil || user.ID == ""{
+		// case not found -> create user from pocketbase
+		Repo.Queries.CreateUser(Repo.Context, internalRepository.CreateUserParams{
+			ID: authResponse.Record.Id,
+			Name: &authResponse.Record.Name,
+			Email: authResponse.Record.Email,
+			AvatarUrl: &authResponse.Record.Avatar,
+		})
 	}
 
 	return &authResponse, nil

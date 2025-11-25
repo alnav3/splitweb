@@ -2,20 +2,10 @@ package templates
 
 import (
 	"fmt"
+	"net/url"
 	"time"
+	"github.com/alnav3/splitweb/db/internal_repository"
 )
-
-// User profile data structure
-type UserProfile struct {
-	ID           string
-	Name         string
-	Email        string
-	CreatedAt    time.Time
-	LastLoginAt  time.Time
-	AvatarURL    string
-	GroupCount   int
-	TotalExpenses float64
-}
 
 // Profile page header component
 templ ProfileHeader() {
@@ -35,14 +25,24 @@ templ ProfileHeader() {
 }
 
 // User info display card
-templ UserInfoCard(user UserProfile) {
+templ UserInfoCard(user internalRepository.User, group_count int) {
 	<div class="bg-ctp-mantle rounded-lg shadow mb-6">
 		<div class="p-4 sm:p-6">
 			<div class="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
 				<!-- Avatar -->
 				<div class="flex justify-center sm:justify-start mb-4 sm:mb-0">
 					<div class="relative">
-						<img class="h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-ctp-blue/20" src={ user.AvatarURL } alt={ user.Name }/>
+						<img class="h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-ctp-blue/20" src={ func() string { 
+							if user.AvatarUrl != nil && *user.AvatarUrl != "" { 
+								return *user.AvatarUrl 
+							} else { 
+								userName := "User"
+								if user.Name != nil && *user.Name != "" {
+									userName = *user.Name
+								}
+								return "https://ui-avatars.com/api/?name=" + url.QueryEscape(userName) + "&background=89b4fa&color=fff"
+							} 
+						}() } alt={ func() string { if user.Name != nil { return *user.Name } else { return "User" } }() }/>
 						<button class="absolute bottom-0 right-0 h-6 w-6 sm:h-8 sm:w-8 bg-ctp-blue rounded-full flex items-center justify-center text-white hover:bg-ctp-blue/90 transition-colors">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -53,7 +53,7 @@ templ UserInfoCard(user UserProfile) {
 
 				<!-- User details -->
 				<div class="flex-1 text-center sm:text-left">
-					<h2 class="text-xl sm:text-2xl font-bold text-ctp-text mb-2">{ user.Name }</h2>
+					<h2 class="text-xl sm:text-2xl font-bold text-ctp-text mb-2">{ func() string { if user.Name != nil { return *user.Name } else { return "User" } }() }</h2>
 					<p class="text-sm sm:text-base text-ctp-subtext0 mb-3">{ user.Email }</p>
 
 					<div class="grid grid-cols-2 gap-4 text-sm">
@@ -63,7 +63,7 @@ templ UserInfoCard(user UserProfile) {
 						</div>
 						<div class="text-center sm:text-left">
 							<p class="text-ctp-subtext1 font-medium">Groups</p>
-							<p class="text-ctp-text">{ fmt.Sprintf("%d", user.GroupCount) }</p>
+							<p class="text-ctp-text">{ fmt.Sprintf("%d", group_count) }</p>
 						</div>
 					</div>
 				</div>
@@ -138,11 +138,11 @@ templ ChangeEmailForm() {
 				x-transition:leave-end="opacity-0 transform -translate-y-2"
 				class="mt-4"
 			>
-				<form 
-					hx-post="/profile/email" 
-					hx-target="#email-feedback" 
+				<form
+					hx-post="/profile/email"
+					hx-target="#email-feedback"
 					hx-swap="innerHTML"
-					class="space-y-4 sm:space-y-5" 
+					class="space-y-4 sm:space-y-5"
 					@submit="
 						setTimeout(() => {
 							showEmailForm = false;
@@ -257,9 +257,9 @@ templ ChangePasswordForm() {
 				x-transition:leave-end="opacity-0 transform -translate-y-2"
 				class="mt-4"
 			>
-				<form 
-					hx-post="/profile/password" 
-					hx-target="#password-feedback" 
+				<form
+					hx-post="/profile/password"
+					hx-target="#password-feedback"
 					hx-swap="innerHTML"
 					class="space-y-4 sm:space-y-5"
 					@submit="
@@ -353,19 +353,19 @@ templ ChangePasswordForm() {
 }
 
 // Account statistics component
-templ AccountStats(user UserProfile) {
+templ AccountStats(user internalRepository.User, groupCount int) {
 	<div class="bg-ctp-mantle rounded-lg shadow mb-6">
 		<div class="p-4 sm:p-6">
 			<h3 class="text-base sm:text-lg font-semibold text-ctp-text mb-4">Account Overview</h3>
 
 			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 				<div class="bg-ctp-surface1/50 p-4 rounded-lg text-center">
-					<div class="text-2xl sm:text-3xl font-bold text-ctp-blue mb-1">{ fmt.Sprintf("%d", user.GroupCount) }</div>
+					<div class="text-2xl sm:text-3xl font-bold text-ctp-blue mb-1">{ fmt.Sprintf("%d", groupCount) }</div>
 					<div class="text-xs sm:text-sm text-ctp-subtext0">Active Groups</div>
 				</div>
 
 				<div class="bg-ctp-surface1/50 p-4 rounded-lg text-center">
-					<div class="text-2xl sm:text-3xl font-bold text-ctp-green mb-1">${ fmt.Sprintf("%.0f", user.TotalExpenses) }</div>
+					<div class="text-2xl sm:text-3xl font-bold text-ctp-green mb-1">${ fmt.Sprintf("%.2f", user.TotalExpenses) }</div>
 					<div class="text-xs sm:text-sm text-ctp-subtext0">Total Expenses</div>
 				</div>
 
@@ -500,7 +500,7 @@ templ DeleteAccountSection() {
 }
 
 // Main profile page template
-templ ProfilePage(user UserProfile) {
+templ ProfilePage(user internalRepository.User, group_count int) {
 	@Layout("SplitWeb - Profile") {
 		<div class="min-h-screen flex flex-col bg-ctp-base" x-data="{
 			profileAlert: false,
@@ -517,10 +517,10 @@ templ ProfilePage(user UserProfile) {
 		<!-- Main content -->
 		<main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 			<!-- User info card -->
-			@UserInfoCard(user)
+			@UserInfoCard(user, group_count)
 
 			<!-- Account statistics -->
-			@AccountStats(user)
+			@AccountStats(user, group_count)
 
 			<!-- Settings Section -->
 			<div class="bg-ctp-mantle rounded-lg shadow mb-6">

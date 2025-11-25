@@ -35,11 +35,6 @@ func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 // Authentication form handlers
 func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
@@ -59,7 +54,7 @@ func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Authenticate with PocketBase
-	authResponse, err := auth.AuthWithPassword(email, password)
+	authResponse, err := auth.AuthWithPassword(email, password, Repo)
 	if err != nil {
 		log.Printf("Authentication failed for %s: %v", email, err)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -122,7 +117,7 @@ func AuthRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Register user with PocketBase
-	user, err := auth.RegisterUser(name, email, password, confirmPassword)
+	user, err := auth.RegisterUser(name, email, password, confirmPassword, Repo)
 	if err != nil {
 		log.Printf("Registration failed for %s: %v", email, err)
 		w.WriteHeader(http.StatusBadRequest)
