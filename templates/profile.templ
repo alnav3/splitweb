@@ -32,16 +32,16 @@ templ UserInfoCard(user internalRepository.User, group_count int) {
 				<!-- Avatar -->
 				<div class="flex justify-center sm:justify-start mb-4 sm:mb-0">
 					<div class="relative">
-						<img class="h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-ctp-blue/20" src={ func() string { 
-							if user.AvatarUrl != nil && *user.AvatarUrl != "" { 
-								return *user.AvatarUrl 
-							} else { 
+						<img class="h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-ctp-blue/20" src={ func() string {
+							if user.AvatarUrl != nil && *user.AvatarUrl != "" {
+								return *user.AvatarUrl
+							} else {
 								userName := "User"
 								if user.Name != nil && *user.Name != "" {
 									userName = *user.Name
 								}
 								return "https://ui-avatars.com/api/?name=" + url.QueryEscape(userName) + "&background=89b4fa&color=fff"
-							} 
+							}
 						}() } alt={ func() string { if user.Name != nil { return *user.Name } else { return "User" } }() }/>
 						<button class="absolute bottom-0 right-0 h-6 w-6 sm:h-8 sm:w-8 bg-ctp-blue rounded-full flex items-center justify-center text-white hover:bg-ctp-blue/90 transition-colors">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,7 +82,7 @@ templ ProfileAlert() {
 		x-transition:leave="transition ease-in duration-200"
 		x-transition:leave-start="opacity-100 transform translate-y-0"
 		x-transition:leave-end="opacity-0 transform translate-y-2"
-		:class="profileAlertType === 'email' ? 'fixed top-4 right-4 z-50 bg-ctp-blue text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'password' ? 'fixed top-4 right-4 z-50 bg-ctp-peach text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'success' ? 'fixed top-4 right-4 z-50 bg-ctp-green text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : 'fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm'"
+		:class="profileAlertType === 'email' ? 'fixed top-4 right-4 z-50 bg-ctp-blue text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'password' ? 'fixed top-4 right-4 z-50 bg-ctp-peach text-white px-6 py-4 rounded-lg shadow-lg max-w-sm' : profileAlertType === 'success' ? 'fixed top-4 right-4 z-50 bg-ctp-green text-black px-6 py-4 rounded-lg shadow-lg max-w-sm' : 'fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm'"
 	>
 		<div class="flex items-center">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,17 +167,6 @@ templ ChangeEmailForm() {
 						/>
 					</div>
 
-					<div>
-						<label for="email-password" class="block text-sm font-semibold text-ctp-subtext1 mb-2">Current Password</label>
-						<input
-							type="password"
-							id="email-password"
-							name="current-password"
-							required
-							class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-ctp-blue transition-colors text-sm sm:text-base"
-							placeholder="Confirm with your current password"
-						/>
-					</div>
 
 					<div class="bg-ctp-blue/10 rounded-lg p-3 sm:p-4 border border-ctp-blue/20">
 						<div class="flex items-start">
@@ -406,57 +395,86 @@ templ DeleteAccountModal() {
 				x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
 			>
 				<div class="px-6 pt-6 pb-4">
-					<div class="flex items-center mb-4">
-						<div class="bg-ctp-red/10 p-3 rounded-full mr-4">
+					<div class="flex flex-col items-center mb-4">
+						<div class="bg-ctp-red/10 p-3 rounded-full mb-3">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ctp-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z"/>
 							</svg>
 						</div>
-						<div>
+						<div class="text-center">
 							<h3 class="text-lg font-semibold text-ctp-text">Delete Account</h3>
 							<p class="text-sm text-ctp-subtext0">This action cannot be undone</p>
 						</div>
 					</div>
 
-					<div class="mb-6">
-						<p class="text-sm text-ctp-text mb-3">
-							Are you absolutely sure you want to delete your account?
-						</p>
-						<div class="bg-ctp-red/10 rounded-lg p-3 border border-ctp-red/20">
-							<p class="text-sm text-ctp-red font-medium mb-2">This will permanently:</p>
-							<ul class="text-xs text-ctp-red space-y-1 ml-4">
-								<li>• Delete your profile and all personal data</li>
-								<li>• Remove you from all groups</li>
-								<li>• Delete all your expense records</li>
-								<li>• Cancel any pending invitations</li>
-							</ul>
-						</div>
-					</div>
-
-					<div class="flex flex-col sm:flex-row gap-3">
-						<button
-							@click="
+					<form
+						hx-post="/profile/delete"
+						hx-target="#delete-feedback"
+						hx-swap="innerHTML"
+						class="mb-6"
+						@submit="
+							setTimeout(() => {
 								deleteModal = false;
 								profileAlertMessage = 'Account deleted successfully';
 								profileAlertType = 'error';
 								profileAlert = true;
 								setTimeout(() => profileAlert = false, 4000);
-							"
-							hx-delete="/profile/delete"
-							class="flex-1 bg-ctp-red hover:bg-ctp-red/90 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-							</svg>
-							Yes, Delete Account
-						</button>
-						<button
-							@click="deleteModal = false"
-							class="px-4 py-2 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1 font-semibold transition-all duration-200"
-						>
-							Cancel
-						</button>
-					</div>
+							}, 1000);
+						"
+					>
+						<div id="delete-feedback" class="hidden mb-4"></div>
+
+						<div class="mb-4">
+							<p class="text-sm text-ctp-text mb-3">
+								Are you absolutely sure you want to delete your account?
+							</p>
+							<div class="bg-ctp-red/10 rounded-lg p-3 border border-ctp-red/20 mb-4">
+								<p class="text-sm text-ctp-red font-medium mb-2">This will permanently:</p>
+								<ul class="text-xs text-ctp-red space-y-1 ml-4">
+									<li>• Delete your profile and all personal data</li>
+									<li>• Remove you from all groups</li>
+									<li>• Delete all your expense records</li>
+									<li>• Cancel any pending invitations</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<label for="delete-password" class="block text-sm font-semibold text-ctp-subtext1 mb-2">
+								Current Password
+							</label>
+							<input
+								type="password"
+								id="delete-password"
+								name="current-password"
+								required
+								class="block w-full px-3 py-2 border border-ctp-surface2 rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-red focus:border-ctp-red transition-colors text-sm"
+								placeholder="Enter your current password to confirm"
+							/>
+							<p class="text-xs text-ctp-subtext0 mt-1">
+								Please confirm your password to proceed with account deletion.
+							</p>
+						</div>
+
+						<div class="flex flex-col sm:flex-row gap-3">
+							<button
+								type="submit"
+								class="flex-1 bg-ctp-red hover:bg-ctp-red/90 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+								</svg>
+								Yes, Delete Account
+							</button>
+							<button
+								type="button"
+								@click="deleteModal = false"
+								class="px-4 py-2 border-2 border-ctp-surface2 rounded-lg text-ctp-subtext1 hover:bg-ctp-surface1 font-semibold transition-all duration-200"
+							>
+								Cancel
+							</button>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>

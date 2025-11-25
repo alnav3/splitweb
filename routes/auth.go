@@ -234,3 +234,87 @@ func AuthLogoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Redirect", "/login")
 	w.WriteHeader(http.StatusOK)
 }
+
+func ConfirmEmailChangeHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.PathValue("token")
+	if token == "" {
+		http.Error(w, "Token is required", http.StatusBadRequest)
+		return
+	}
+
+	// Store the token in session for later use
+	err := auth.SetEmailChangeToken(r, w, token)
+	if err != nil {
+		log.Printf("Error storing email change token in session: %v", err)
+		http.Error(w, "Error processing request", http.StatusInternalServerError)
+		return
+	}
+
+	// Render the email change confirmation page
+	err = templates.ConfirmEmailChange(token).Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		log.Printf("Error rendering template: %v", err)
+	}
+}
+
+func ConfirmEmailChangeWithPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	password := r.FormValue("password")
+
+	// Basic validation
+	if password == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		err := templates.EmailChangeConfirmationError("Password is required.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering error template: %v", err)
+		}
+		return
+	}
+
+	// Get token from session
+	token, tokenExists := auth.GetEmailChangeToken(r)
+	if !tokenExists {
+		w.WriteHeader(http.StatusBadRequest)
+		err := templates.EmailChangeConfirmationError("No email change request found. Please try again from the email link.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering error template: %v", err)
+		}
+		return
+	}
+
+	// Confirm email change via auth package
+	err := auth.ConfirmEmailChange(token, password)
+	if err != nil {
+		log.Printf("Email change confirmation failed: %v", err)
+
+		if err.Error() == "validation_error" {
+			// PocketBase validation error - show error popup
+			w.WriteHeader(http.StatusBadRequest)
+			err := templates.EmailChangeErrorPopup().Render(r.Context(), w)
+			if err != nil {
+				log.Printf("Error rendering error popup template: %v", err)
+			}
+		} else {
+			// Other errors (server config, network, etc.)
+			w.WriteHeader(http.StatusInternalServerError)
+			err := templates.EmailChangeConfirmationError("An error occurred while processing your request.").Render(r.Context(), w)
+			if err != nil {
+				log.Printf("Error rendering error template: %v", err)
+			}
+		}
+		return
+	}
+
+	// Success - clear token from session
+	err = auth.ClearEmailChangeToken(r, w)
+	if err != nil {
+		log.Printf("Error clearing email change token from session: %v", err)
+	}
+
+	// Show success popup and redirect to login
+	w.WriteHeader(http.StatusOK)
+	err = templates.EmailChangeSuccessPopup().Render(r.Context(), w)
+	if err != nil {
+		log.Printf("Error rendering success template: %v", err)
+	}
+}

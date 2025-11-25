@@ -1,24 +1,112 @@
 package templates
 
+
+// Auth page header component
+templ AuthPageHeader(title, subtitle, linkText, linkHref string) {
+	<div class="text-center">
+		<h1 class="text-3xl sm:text-4xl font-bold text-ctp-blue mb-2">SplitWeb</h1>
+		<h2 class="text-lg sm:text-xl font-semibold text-ctp-text">{ title }</h2>
+		if subtitle != "" {
+			<p class="mt-2 text-sm text-ctp-subtext0">
+				{ subtitle }
+				if linkText != "" && linkHref != "" {
+					<a href={ templ.URL(linkHref) } class="font-medium text-ctp-blue hover:text-ctp-blue/80 transition-colors">
+						{ linkText }
+					</a>
+				}
+			</p>
+		}
+	</div>
+}
+
+// Auth form container
+templ AuthFormContainer() {
+	<div class="bg-ctp-mantle rounded-lg shadow-lg p-6 sm:p-8">
+		{ children... }
+	</div>
+}
+
+// Auth input field component
+templ AuthInputField(id, name, inputType, label, placeholder, autocomplete, xModel, validationError string, required bool) {
+	<div>
+		<label for={ id } class="block text-sm font-medium text-ctp-subtext1 mb-2">
+			{ label }
+		</label>
+		<input
+			id={ id }
+			name={ name }
+			type={ inputType }
+			if autocomplete != "" {
+				autocomplete={ autocomplete }
+			}
+			if required {
+				required
+			}
+			if xModel != "" {
+				x-model={ xModel }
+			}
+			@input="validateForm()" @blur="validateForm()"
+			class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
+			if validationError != "" {
+				:class={ "errors." + validationError + " ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'" }
+			} else {
+				class="border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue"
+			}
+			placeholder={ placeholder }
+		/>
+		if validationError != "" {
+			<p x-show={ "errors." + validationError } x-text={ "errors." + validationError } class="mt-1 text-sm text-ctp-red"></p>
+		}
+	</div>
+}
+
+// Auth button component
+templ AuthButton(buttonText, iconPath, disableCondition string) {
+	<button
+		type="submit"
+		if disableCondition != "" {
+			:disabled={ disableCondition }
+		}
+		class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+		if disableCondition != "" {
+			:class={ disableCondition + " ? 'text-ctp-subtext0 bg-ctp-surface2' : 'text-ctp-base bg-ctp-blue hover:bg-ctp-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ctp-blue'" }
+		} else {
+			class="text-ctp-base bg-ctp-blue hover:bg-ctp-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ctp-blue"
+		}
+	>
+		if iconPath != "" {
+			<svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ iconPath }></path>
+			</svg>
+		}
+		{ buttonText }
+	</button>
+}
+
+// Info box component
+templ AuthInfoBox(message string) {
+	<div class="bg-ctp-blue/10 border border-ctp-blue/30 rounded-lg p-4">
+		<div class="flex">
+			<svg class="h-5 w-5 text-ctp-blue mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			</svg>
+			<div>
+				<p class="text-sm text-ctp-blue">
+					{ message }
+				</p>
+			</div>
+		</div>
+	</div>
+}
+
 // Login page template
 templ Login() {
 	@AuthLayout("SplitWeb - Login") {
 		<div class="min-h-screen flex items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
 			<div class="max-w-md w-full space-y-6 sm:space-y-8">
-				<!-- Header -->
-				<div class="text-center">
-					<h1 class="text-3xl sm:text-4xl font-bold text-ctp-blue mb-2">SplitWeb</h1>
-					<h2 class="text-lg sm:text-xl font-semibold text-ctp-text">Sign in to your account</h2>
-					<p class="mt-2 text-sm text-ctp-subtext0">
-						Or
-						<a href="/register" class="font-medium text-ctp-blue hover:text-ctp-blue/80 transition-colors">
-							create a new account
-						</a>
-					</p>
-				</div>
+				@AuthPageHeader("Sign in to your account", "Or", "create a new account", "/register")
 
-				<!-- Login Form -->
-				<div class="bg-ctp-mantle rounded-lg shadow-lg p-6 sm:p-8">
+				@AuthFormContainer() {
 					<form
 						hx-post="/auth/login"
 						hx-target="#auth-feedback"
@@ -29,16 +117,13 @@ templ Login() {
 							errors: {},
 							validateForm() {
 								this.errors = {};
-
 								const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 								if (!this.email || !emailRegex.test(this.email)) {
 									this.errors.email = 'Please enter a valid email address';
 								}
-
 								if (!this.password || this.password.length < 1) {
 									this.errors.password = 'Password is required';
 								}
-
 								return Object.keys(this.errors).length === 0;
 							},
 							submitForm(event) {
@@ -52,43 +137,9 @@ templ Login() {
 					>
 						<div id="auth-feedback"></div>
 
-						<div>
-							<label for="email" class="block text-sm font-medium text-ctp-subtext1 mb-2">
-								Email address
-							</label>
-							<input
-								id="email"
-								name="email"
-								type="email"
-								autocomplete="email"
-								required
-								x-model="email"
-								@input="validateForm()" @blur="validateForm()"
-								class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
-								:class="errors.email ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'"
-								placeholder="Enter your email"
-							/>
-							<p x-show="errors.email" x-text="errors.email" class="mt-1 text-sm text-ctp-red"></p>
-						</div>
+						@AuthInputField("email", "email", "email", "Email address", "Enter your email", "email", "email", "email", true)
 
-						<div>
-							<label for="password" class="block text-sm font-medium text-ctp-subtext1 mb-2">
-								Password
-							</label>
-							<input
-								id="password"
-								name="password"
-								type="password"
-								autocomplete="current-password"
-								required
-								x-model="password"
-								@input="validateForm()" @blur="validateForm()"
-								class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
-								:class="errors.password ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'"
-								placeholder="Enter your password"
-							/>
-							<p x-show="errors.password" x-text="errors.password" class="mt-1 text-sm text-ctp-red"></p>
-						</div>
+						@AuthInputField("password", "password", "password", "Password", "Enter your password", "current-password", "password", "password", true)
 
 						<div class="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
 							<div class="flex items-center">
@@ -102,7 +153,6 @@ templ Login() {
 									Remember me
 								</label>
 							</div>
-
 							<div class="text-sm">
 								<a href="/forgot-password" class="font-medium text-ctp-blue hover:text-ctp-blue/80 transition-colors">
 									Forgot your password?
@@ -110,23 +160,9 @@ templ Login() {
 							</div>
 						</div>
 
-						<div>
-							<button
-								type="submit"
-								:disabled="Object.keys(errors).length > 0 || !email || !password"
-								class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-								:class="Object.keys(errors).length > 0 || !email || !password ? 'text-ctp-subtext0 bg-ctp-surface2' : 'text-ctp-base bg-ctp-blue hover:bg-ctp-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ctp-blue'"
-							>
-								<svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-								</svg>
-								Sign in
-							</button>
-						</div>
+						@AuthButton("Sign in", "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1", "Object.keys(errors).length > 0 || !email || !password")
 					</form>
-				</div>
-
-
+				}
 			</div>
 		</div>
 	}
@@ -137,20 +173,9 @@ templ Register() {
 	@AuthLayout("SplitWeb - Register") {
 		<div class="min-h-screen flex items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
 			<div class="max-w-md w-full space-y-6 sm:space-y-8">
-				<!-- Header -->
-				<div class="text-center">
-					<h1 class="text-3xl sm:text-4xl font-bold text-ctp-blue mb-2">SplitWeb</h1>
-					<h2 class="text-lg sm:text-xl font-semibold text-ctp-text">Create your account</h2>
-					<p class="mt-2 text-sm text-ctp-subtext0">
-						Already have an account?
-						<a href="/login" class="font-medium text-ctp-blue hover:text-ctp-blue/80 transition-colors">
-							Sign in
-						</a>
-					</p>
-				</div>
+				@AuthPageHeader("Create your account", "Already have an account?", "Sign in", "/login")
 
-				<!-- Register Form -->
-				<div class="bg-ctp-mantle rounded-lg shadow-lg p-6 sm:p-8">
+				@AuthFormContainer() {
 					<form
 						hx-post="/auth/register"
 						hx-target="#auth-feedback"
@@ -163,24 +188,19 @@ templ Register() {
 							errors: {},
 							validateForm() {
 								this.errors = {};
-
 								if (!this.name || this.name.trim().length < 2) {
 									this.errors.name = 'Full name must be at least 2 characters long';
 								}
-
 								const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 								if (!this.email || !emailRegex.test(this.email)) {
 									this.errors.email = 'Please enter a valid email address';
 								}
-
 								if (!this.password || this.password.length < 6) {
 									this.errors.password = 'Password must be at least 6 characters long';
 								}
-
 								if (this.password !== this.confirmPassword) {
 									this.errors.confirmPassword = 'Passwords do not match';
 								}
-
 								return Object.keys(this.errors).length === 0;
 							},
 							submitForm(event) {
@@ -194,99 +214,17 @@ templ Register() {
 					>
 						<div id="auth-feedback"></div>
 
-						<div>
-							<label for="name" class="block text-sm font-medium text-ctp-subtext1 mb-2">
-								Full name
-							</label>
-							<input
-								id="name"
-								name="name"
-								type="text"
-								autocomplete="name"
-								required
-								x-model="name"
-								@input="validateForm()" @blur="validateForm()"
-								class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
-								:class="errors.name ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'"
-								placeholder="Enter your full name"
-							/>
-							<p x-show="errors.name" x-text="errors.name" class="mt-1 text-sm text-ctp-red"></p>
-						</div>
+						@AuthInputField("name", "name", "text", "Full name", "Enter your full name", "name", "name", "name", true)
 
-						<div>
-							<label for="email" class="block text-sm font-medium text-ctp-subtext1 mb-2">
-								Email address
-							</label>
-							<input
-								id="email"
-								name="email"
-								type="email"
-								autocomplete="email"
-								required
-								x-model="email"
-								@input="validateForm()" @blur="validateForm()"
-								class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
-								:class="errors.email ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'"
-								placeholder="Enter your email"
-							/>
-							<p x-show="errors.email" x-text="errors.email" class="mt-1 text-sm text-ctp-red"></p>
-						</div>
+						@AuthInputField("email", "email", "email", "Email address", "Enter your email", "email", "email", "email", true)
 
-						<div>
-							<label for="password" class="block text-sm font-medium text-ctp-subtext1 mb-2">
-								Password
-							</label>
-							<input
-								id="password"
-								name="password"
-								type="password"
-								autocomplete="new-password"
-								required
-								x-model="password"
-								@input="validateForm()"
-								class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
-								:class="errors.password ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'"
-								placeholder="Create a password (min. 6 characters)"
-							/>
-							<p x-show="errors.password" x-text="errors.password" class="mt-1 text-sm text-ctp-red"></p>
-						</div>
+						@AuthInputField("password", "password", "password", "Password", "Create a password (min. 6 characters)", "new-password", "password", "password", true)
 
-						<div>
-							<label for="confirm-password" class="block text-sm font-medium text-ctp-subtext1 mb-2">
-								Confirm password
-							</label>
-							<input
-								id="confirm-password"
-								name="confirm-password"
-								type="password"
-								autocomplete="new-password"
-								required
-								x-model="confirmPassword"
-								@input="validateForm()"
-								class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
-								:class="errors.confirmPassword ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'"
-								placeholder="Confirm your password"
-							/>
-							<p x-show="errors.confirmPassword" x-text="errors.confirmPassword" class="mt-1 text-sm text-ctp-red"></p>
-						</div>
+						@AuthInputField("confirm-password", "confirm-password", "password", "Confirm password", "Confirm your password", "new-password", "confirmPassword", "confirmPassword", true)
 
-						<div>
-							<button
-								type="submit"
-								:disabled="Object.keys(errors).length > 0 || !name || !email || !password || !confirmPassword"
-								class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-								:class="Object.keys(errors).length > 0 || !name || !email || !password || !confirmPassword ? 'text-ctp-subtext0 bg-ctp-surface2' : 'text-ctp-base bg-ctp-blue hover:bg-ctp-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ctp-blue'"
-							>
-								<svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-								</svg>
-								Create account
-							</button>
-						</div>
+						@AuthButton("Create account", "M12 6v6m0 0v6m0-6h6m-6 0H6", "Object.keys(errors).length > 0 || !name || !email || !password || !confirmPassword")
 					</form>
-				</div>
-
-
+				}
 			</div>
 		</div>
 	}
@@ -297,20 +235,9 @@ templ ForgotPassword() {
 	@AuthLayout("SplitWeb - Forgot Password") {
 		<div class="min-h-screen flex items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
 			<div class="max-w-md w-full space-y-6 sm:space-y-8">
-				<!-- Header -->
-				<div class="text-center">
-					<h1 class="text-3xl sm:text-4xl font-bold text-ctp-blue mb-2">SplitWeb</h1>
-					<h2 class="text-lg sm:text-xl font-semibold text-ctp-text">Reset your password</h2>
-					<p class="mt-2 text-sm text-ctp-subtext0">
-						Remember your password?
-						<a href="/login" class="font-medium text-ctp-blue hover:text-ctp-blue/80 transition-colors">
-							Sign in
-						</a>
-					</p>
-				</div>
+				@AuthPageHeader("Reset your password", "Remember your password?", "Sign in", "/login")
 
-				<!-- Forgot Password Form -->
-				<div class="bg-ctp-mantle rounded-lg shadow-lg p-6 sm:p-8">
+				@AuthFormContainer() {
 					<form
 						hx-post="/auth/forgot-password"
 						hx-target="#auth-feedback"
@@ -320,12 +247,10 @@ templ ForgotPassword() {
 							errors: {},
 							validateForm() {
 								this.errors = {};
-
 								const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 								if (!this.email || !emailRegex.test(this.email)) {
 									this.errors.email = 'Please enter a valid email address';
 								}
-
 								return Object.keys(this.errors).length === 0;
 							},
 							submitForm(event) {
@@ -339,51 +264,11 @@ templ ForgotPassword() {
 					>
 						<div id="auth-feedback"></div>
 
-						<div class="bg-ctp-blue/10 border border-ctp-blue/30 rounded-lg p-4">
-							<div class="flex">
-								<svg class="h-5 w-5 text-ctp-blue mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-								</svg>
-								<div>
-									<p class="text-sm text-ctp-blue">
-										Enter your email address and we'll send you a link to reset your password.
-									</p>
-								</div>
-							</div>
-						</div>
+						@AuthInfoBox("Enter your email address and we'll send you a link to reset your password.")
 
-						<div>
-							<label for="email" class="block text-sm font-medium text-ctp-subtext1 mb-2">
-								Email address
-							</label>
-							<input
-								id="email"
-								name="email"
-								type="email"
-								autocomplete="email"
-								required
-								x-model="email"
-								@input="validateForm()" @blur="validateForm()"
-								class="w-full px-3 py-2 border rounded-lg shadow-sm placeholder-ctp-subtext0 bg-ctp-surface1 text-ctp-text focus:outline-none focus:ring-2 transition-colors"
-								:class="errors.email ? 'border-ctp-red focus:ring-ctp-red focus:border-ctp-red' : 'border-ctp-surface2 focus:ring-ctp-blue focus:border-ctp-blue'"
-								placeholder="Enter your email"
-							/>
-							<p x-show="errors.email" x-text="errors.email" class="mt-1 text-sm text-ctp-red"></p>
-						</div>
+						@AuthInputField("email", "email", "email", "Email address", "Enter your email", "email", "email", "email", true)
 
-						<div>
-							<button
-								type="submit"
-								:disabled="Object.keys(errors).length > 0 || !email"
-								class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-								:class="Object.keys(errors).length > 0 || !email ? 'text-ctp-subtext0 bg-ctp-surface2' : 'text-ctp-base bg-ctp-blue hover:bg-ctp-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ctp-blue'"
-							>
-								<svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-								</svg>
-								Send reset link
-							</button>
-						</div>
+						@AuthButton("Send reset link", "M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", "Object.keys(errors).length > 0 || !email")
 
 						<div class="text-center">
 							<a href="/register" class="text-sm text-ctp-blue hover:text-ctp-blue/80 transition-colors">
@@ -391,9 +276,7 @@ templ ForgotPassword() {
 							</a>
 						</div>
 					</form>
-				</div>
-
-
+				}
 			</div>
 		</div>
 	}
@@ -450,4 +333,103 @@ templ PasswordResetSent(email string) {
 			</div>
 		</div>
 	}
+}
+
+// Email change confirmation page template
+templ ConfirmEmailChange(token string) {
+	@AuthLayout("SplitWeb - Verify Email Change") {
+		<div class="min-h-screen flex items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
+			<div class="max-w-md w-full space-y-6 sm:space-y-8">
+				@AuthPageHeader("Verify email change", "Enter your password to confirm email change", "", "")
+
+				@AuthFormContainer() {
+					<form
+						hx-post="/auth/confirm-email-change"
+						hx-target="#auth-feedback"
+						class="space-y-6"
+						x-data="{
+							password: '',
+							errors: {},
+							validateForm() {
+								this.errors = {};
+								if (!this.password || this.password.length < 1) {
+									this.errors.password = 'Password is required';
+								}
+								return Object.keys(this.errors).length === 0;
+							},
+							submitForm(event) {
+								if (!this.validateForm()) {
+									event.preventDefault();
+									return false;
+								}
+							}
+						}"
+						@submit="submitForm($event)"
+					>
+						<div id="auth-feedback"></div>
+
+						@AuthInfoBox("Please enter your current password to confirm the email change request.")
+
+						@AuthInputField("password", "password", "password", "Current Password", "Enter your current password", "current-password", "password", "password", true)
+
+						@AuthButton("Confirm Email Change", "M5 13l4 4L19 7", "Object.keys(errors).length > 0 || !password")
+
+						<div class="text-center">
+							<a href="/login" class="text-sm text-ctp-blue hover:text-ctp-blue/80 transition-colors">
+								Back to login
+							</a>
+						</div>
+					</form>
+				}
+			</div>
+		</div>
+	}
+}
+
+// Error component for email change confirmation
+templ EmailChangeConfirmationError(message string) {
+	<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
+		<p class="text-sm text-red-700 dark:text-red-300">{ message }</p>
+	</div>
+}
+
+// Success component for email change confirmation
+templ EmailChangeConfirmationSuccess(message string) {
+	<div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-4">
+		<p class="text-sm text-green-700 dark:text-green-300">{ message }</p>
+	</div>
+	<script>
+		setTimeout(function() {
+			window.location.href = '/login';
+		}, 2000);
+	</script>
+}
+
+// Success popup component (styled like dashboard popups)
+templ EmailChangeSuccessPopup() {
+	<div class="fixed top-4 right-4 z-50 bg-ctp-green text-black px-6 py-4 rounded-lg shadow-lg max-w-sm">
+		<div class="flex items-center">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+			</svg>
+			<p class="font-medium">Email change confirmed successfully!</p>
+		</div>
+	</div>
+	<script>
+		setTimeout(function() {
+			window.location.href = '/login';
+		}, 2000);
+	</script>
+}
+
+// Error popup component (styled like dashboard popups)
+templ EmailChangeErrorPopup() {
+	<div class="fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm">
+		<div class="flex items-center">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+			</svg>
+			<p class="font-medium">An error occurred while validating the submitted data. Please try again by clicking in the mail.</p>
+		</div>
+	</div>
 }

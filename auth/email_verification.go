@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func RequestEmailChange(identity, token string) error {
+func RequestEmailChange(newEmail, token string) error {
 	pocketBaseUrl, err := getPocketBaseURL()
 	if err != nil {
 		return err
@@ -16,13 +16,21 @@ func RequestEmailChange(identity, token string) error {
 	url := fmt.Sprintf("%s/api/collections/Splitweb_users/request-email-change", pocketBaseUrl)
 
 	requestBody, err := json.Marshal(map[string]string{
-		"identity": identity,
+		"newEmail": newEmail,
 	})
 	if err != nil {
 		return err
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -86,4 +94,35 @@ func VerifyEmail(token string) error {
 	}
 
 	return nil
+}
+
+func ConfirmEmailChange(token, password string) error {
+	pocketBaseUrl, err := getPocketBaseURL()
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("%s/api/collections/Splitweb_users/confirm-email-change", pocketBaseUrl)
+
+	requestBody, err := json.Marshal(map[string]string{
+		"token":    token,
+		"password": password,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 204 {
+		return nil
+	} else if resp.StatusCode == 400 {
+		return fmt.Errorf("validation_error")
+	} else {
+		return fmt.Errorf("unexpected error occurred")
+	}
 }

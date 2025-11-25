@@ -94,3 +94,42 @@ func IsAuthenticated(r *http.Request) bool {
 	err := ValidateToken(token, userId)
 	return err == nil
 }
+
+// SetEmailChangeToken stores an email change token in the session
+func SetEmailChangeToken(r *http.Request, w http.ResponseWriter, token string) error {
+	session, err := GetSession(r)
+	if err != nil {
+		return fmt.Errorf("failed to get session: %v", err)
+	}
+
+	session.Values["email_change_token"] = token
+
+	return SaveSession(r, w, session)
+}
+
+// GetEmailChangeToken retrieves the email change token from the session
+func GetEmailChangeToken(r *http.Request) (string, bool) {
+	session, err := GetSession(r)
+	if err != nil {
+		return "", false
+	}
+
+	token, ok := session.Values["email_change_token"].(string)
+	if !ok || token == "" {
+		return "", false
+	}
+
+	return token, true
+}
+
+// ClearEmailChangeToken removes the email change token from the session
+func ClearEmailChangeToken(r *http.Request, w http.ResponseWriter) error {
+	session, err := GetSession(r)
+	if err != nil {
+		return fmt.Errorf("failed to get session: %v", err)
+	}
+
+	session.Values["email_change_token"] = nil
+
+	return SaveSession(r, w, session)
+}
