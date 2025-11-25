@@ -14,3 +14,8 @@ VALUES ($1, $2, $3, $4);
 DELETE FROM users
 where id = $1;
 
+-- name: UpdateUserEmail :exec
+UPDATE users
+SET email = $2
+WHERE id = $1;
+

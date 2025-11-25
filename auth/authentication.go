@@ -50,6 +50,11 @@ func AuthWithPassword(identity, password string, Repo *databaselogic.Repository)
 			Email: authResponse.Record.Email,
 			AvatarUrl: &authResponse.Record.Avatar,
 		})
+	} else if user.Email != authResponse.Record.Email {
+		Repo.Queries.UpdateUserEmail(Repo.Context, internalRepository.UpdateUserEmailParams{
+			ID: authResponse.Record.Id,
+			Email: authResponse.Record.Email,
+		})
 	}
 
 	return &authResponse, nil
