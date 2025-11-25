@@ -3,7 +3,6 @@ package routes
 import (
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/alnav3/splitweb/auth"
 	"github.com/alnav3/splitweb/templates"
@@ -11,12 +10,19 @@ import (
 
 // Profile page handler
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
-	user := getMockUserProfile()
-	err := templates.ProfilePage(user).Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		log.Printf("Error rendering template: %v", err)
+	_, userId, isValid := auth.GetUserFromSession(r)
+	if isValid {
+		user, _ := Repo.Queries.FindUserById(Repo.Context, userId) // add error handling later
+		groupsCount, _ := Repo.Queries.GroupsCountByUserId(Repo.Context, userId) // add error handling later
+		err := templates.ProfilePage(user, int(groupsCount)).Render(r.Context(), w)
+		if err != nil {
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
+			log.Printf("Error rendering template: %v", err)
+		}
+		return
 	}
+	http.Error(w, "Error rendering template", http.StatusInternalServerError)
+	log.Printf("Error rendering template: userId not valid")
 }
 
 // Profile form handlers
@@ -132,16 +138,3 @@ func ProfileDeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Helper function to create mock user profile data
-func getMockUserProfile() templates.UserProfile {
-	return templates.UserProfile{
-		ID:            "user123",
-		Name:          "John Doe",
-		Email:         "john.doe@example.com",
-		CreatedAt:     time.Now().AddDate(0, -8, -15), // 8 months and 15 days ago
-		LastLoginAt:   time.Now().Add(-time.Hour * 3), // 3 hours ago
-		AvatarURL:     "https://ui-avatars.com/api/?name=John+Doe&background=89b4fa&color=fff",
-		GroupCount:    5,
-		TotalExpenses: 1247.50,
-	}
-}

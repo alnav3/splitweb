@@ -5,7 +5,10 @@ import (
 	"strings"
 
 	"github.com/alnav3/splitweb/auth"
+	databaselogic "github.com/alnav3/splitweb/db/database_logic"
 )
+
+var Repo *databaselogic.Repository
 
 // Custom file server that sets proper MIME types
 func StaticHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +27,9 @@ func HandleDirectory(dirs ...string) {
 }
 
 // SetupRoutes configures all application routes
-func SetupRoutes() {
+func SetupRoutes(repo *databaselogic.Repository) {
+	// Store the repository globally for use in route handlers
+	Repo = repo
 
 	// Static file handling
 	HandleDirectory("/style/")

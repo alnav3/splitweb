@@ -122,7 +122,7 @@ func AuthRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Register user with PocketBase
-	user, err := auth.RegisterUser(name, email, password, confirmPassword)
+	user, err := auth.RegisterUser(name, email, password, confirmPassword, Repo)
 	if err != nil {
 		log.Printf("Registration failed for %s: %v", email, err)
 		w.WriteHeader(http.StatusBadRequest)

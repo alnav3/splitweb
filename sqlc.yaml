@@ -9,9 +9,34 @@ sql:
         package: "internalRepository"
         out: "db/internal_repository"
         sql_package: "pgx/v5"
+        emit_pointers_for_null_types: true
         overrides:
           - db_type: "date"
             go_type:
               import: "time"
               type: "Time"
+          - db_type: "timestamptz"
+            go_type:
+              import: "time"
+              type: "Time"
+          - db_type: "timestamp"
+            go_type:
+              import: "time"
+              type: "Time"
+          - db_type: "decimal"
+            go_type: "float64"
+          - db_type: "numeric"
+            go_type: "float64"
+          - column: "users.total_expenses"
+            go_type: "float64"
+          - column: "users.created_at"
+            go_type:
+              import: "time"
+              type: "Time"
+          - column: "users.updated_at"
+            go_type:
+              import: "time"
+              type: "Time"
+          - db_type: "uuid"
+            go_type: "string"
 
