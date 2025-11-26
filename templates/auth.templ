@@ -110,6 +110,18 @@ templ Login() {
 					<form
 						hx-post="/auth/login"
 						hx-target="#auth-feedback"
+						hx-on:htmx:response-error="
+							if (event.detail.xhr.status >= 400 && event.detail.xhr.status < 500) {
+								document.getElementById('auth-feedback').innerHTML = event.detail.xhr.responseText;
+								// Auto-hide the popup after 5 seconds
+								setTimeout(function() {
+									const popup = document.getElementById('login-error-popup');
+									if (popup) {
+										popup.remove();
+									}
+								}, 5000);
+							}
+						"
 						class="space-y-6"
 						x-data="{
 							email: '',
@@ -238,10 +250,11 @@ templ ForgotPassword() {
 				@AuthPageHeader("Reset your password", "Remember your password?", "Sign in", "/login")
 
 				@AuthFormContainer() {
-					<form
-						hx-post="/auth/forgot-password"
-						hx-target="#auth-feedback"
-						class="space-y-6"
+					<div id="forgot-password-form">
+						<form
+							hx-post="/auth/forgot-password"
+							hx-target="#forgot-password-form"
+							class="space-y-6"
 						x-data="{
 							email: '',
 							errors: {},
@@ -276,6 +289,7 @@ templ ForgotPassword() {
 							</a>
 						</div>
 					</form>
+					</div>
 				}
 			</div>
 		</div>
@@ -420,6 +434,67 @@ templ EmailChangeSuccessPopup() {
 			window.location.href = '/login';
 		}, 2000);
 	</script>
+}
+
+// Error components for form validation
+templ AuthValidationError(message string) {
+	<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
+		<p class="text-sm text-red-700 dark:text-red-300">{ message }</p>
+	</div>
+}
+
+// Success component for registration
+templ AuthRegistrationSuccess() {
+	<div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-4">
+		<p class="text-sm text-green-700 dark:text-green-300">Registration successful! Redirecting to login...</p>
+	</div>
+	<script>setTimeout(function() { window.location.href = '/login'; }, 2000);</script>
+}
+
+// Success component for password reset
+templ AuthPasswordResetSuccess() {
+	<div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+		<p class="text-sm text-green-700 dark:text-green-300">Reset email sent successfully!</p>
+	</div>
+}
+
+// Success component for forgot password form submission (replaces entire form content)
+templ ForgotPasswordSuccess(email string) {
+	<div id="auth-feedback"></div>
+
+	<div class="mb-6">
+		@AuthInfoBox("We've sent a password reset link to " + email + ". Click the link in the email to reset your password.")
+	</div>
+
+	<div class="space-y-4">
+		<button
+			hx-post="/auth/resend-reset"
+			hx-vals={ `{"email": "` + email + `"}` }
+			hx-target="#auth-feedback"
+			class="w-full flex justify-center py-2 px-4 border border-ctp-surface2 rounded-lg text-sm font-medium text-ctp-subtext1 bg-ctp-surface1 hover:bg-ctp-surface2 transition-colors"
+		>
+			Resend email
+		</button>
+
+		<a
+			href="/login"
+			class="block w-full text-center py-2 px-4 text-sm font-medium text-ctp-blue hover:text-ctp-blue/80 transition-colors"
+		>
+			Back to login
+		</a>
+	</div>
+}
+
+// Error popup component for login failures (styled like email change popup)
+templ LoginErrorPopup() {
+	<div id="login-error-popup" hx-swap-oob="afterbegin:body" class="fixed top-4 right-4 z-50 bg-ctp-red text-white px-6 py-4 rounded-lg shadow-lg max-w-sm">
+		<div class="flex items-center">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+			</svg>
+			<p class="font-medium">Email or password is wrong. Please try again.</p>
+		</div>
+	</div>
 }
 
 // Error popup component (styled like dashboard popups)

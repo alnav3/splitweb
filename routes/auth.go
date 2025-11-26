@@ -47,9 +47,10 @@ func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Basic validation
 	if email == "" || password == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Email and password are required.</p>
-		</div>`))
+		err := templates.AuthValidationError("Email and password are required.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering validation error: %v", err)
+		}
 		return
 	}
 
@@ -57,10 +58,11 @@ func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	authResponse, err := auth.AuthWithPassword(email, password, Repo)
 	if err != nil {
 		log.Printf("Authentication failed for %s: %v", email, err)
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Invalid email or password.</p>
-		</div>`))
+		w.WriteHeader(http.StatusBadRequest)
+		err := templates.LoginErrorPopup().Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering login error popup: %v", err)
+		}
 		return
 	}
 
@@ -69,9 +71,10 @@ func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error setting user session: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Error creating session. Please try again.</p>
-		</div>`))
+		err := templates.AuthValidationError("Error creating session. Please try again.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering session error: %v", err)
+		}
 		return
 	}
 
@@ -102,17 +105,19 @@ func AuthRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Basic validation
 	if name == "" || email == "" || password == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">All fields are required.</p>
-		</div>`))
+		err := templates.AuthValidationError("All fields are required.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering validation error: %v", err)
+		}
 		return
 	}
 
 	if password != confirmPassword {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Passwords do not match.</p>
-		</div>`))
+		err := templates.AuthValidationError("Passwords do not match.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering validation error: %v", err)
+		}
 		return
 	}
 
@@ -121,9 +126,10 @@ func AuthRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Registration failed for %s: %v", email, err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Registration failed. Please try again or use a different email.</p>
-		</div>`))
+		err := templates.AuthValidationError("Registration failed. Please try again or use a different email.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering registration error: %v", err)
+		}
 		return
 	}
 
@@ -131,10 +137,10 @@ func AuthRegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Show success message and redirect to login
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`<div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-4">
-		<p class="text-sm text-green-700 dark:text-green-300">Registration successful! Redirecting to login...</p>
-	</div>
-	<script>setTimeout(function() { window.location.href = '/login'; }, 2000);</script>`))
+	err = templates.AuthRegistrationSuccess().Render(r.Context(), w)
+	if err != nil {
+		log.Printf("Error rendering registration success: %v", err)
+	}
 }
 
 func AuthForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
@@ -154,9 +160,10 @@ func AuthForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	// Basic validation
 	if email == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Email is required.</p>
-		</div>`))
+		err := templates.AuthValidationError("Email is required.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering validation error: %v", err)
+		}
 		return
 	}
 
@@ -165,16 +172,18 @@ func AuthForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Password reset failed for %s: %v", email, err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Failed to send password reset email. Please check your email address.</p>
-		</div>`))
+		err := templates.AuthValidationError("Failed to send password reset email. Please check your email address.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering password reset error: %v", err)
+		}
 		return
 	}
 
 	log.Printf("Password reset email sent to: %s", email)
 
-	// Render success message
-	err = templates.PasswordResetSent(email).Render(r.Context(), w)
+	// Render success message for HTMX target
+	w.WriteHeader(http.StatusOK)
+	err = templates.ForgotPasswordSuccess(email).Render(r.Context(), w)
 	if err != nil {
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		log.Printf("Error rendering template: %v", err)
@@ -200,18 +209,20 @@ func AuthResendResetHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Password reset resend failed for %s: %v", email, err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-			<p class="text-sm text-red-700 dark:text-red-300">Failed to resend reset email. Please try again.</p>
-		</div>`))
+		err := templates.AuthValidationError("Failed to resend reset email. Please try again.").Render(r.Context(), w)
+		if err != nil {
+			log.Printf("Error rendering resend error: %v", err)
+		}
 		return
 	}
 
 	log.Printf("Password reset email resent to: %s", email)
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`<div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
-		<p class="text-sm text-green-700 dark:text-green-300">Reset email sent successfully!</p>
-	</div>`))
+	err = templates.AuthPasswordResetSuccess().Render(r.Context(), w)
+	if err != nil {
+		log.Printf("Error rendering password reset success: %v", err)
+	}
 }
 
 func AuthLogoutHandler(w http.ResponseWriter, r *http.Request) {
